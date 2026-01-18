@@ -1,6 +1,4 @@
-// GET ALL BRANDS
 import { Brand } from "../models/index.js";
-
 
 /**
  * Get All Brands
@@ -62,9 +60,6 @@ export const getBrandById = async (req, res) => {
   }
 };
 
-
-
-
 /**
  * Create Brand
  */
@@ -102,14 +97,13 @@ export const createBrand = async (req, res) => {
   }
 };
 
-
 /**
  * Update Brand
  */
 export const updateBrand = async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const { name: newName } = req.body; // match model column
+    const { name: newName } = req.body;
 
     // Validate ID
     if (!Number.isInteger(id) || id <= 0) {
@@ -193,7 +187,7 @@ export const deleteBrand = async (req, res) => {
     res.status(200).json({
       statusCode: 200,
       message: "Brand deleted successfully",
-      data: brand, // returning deleted brand info
+      data: brand,
     });
   } catch (err) {
     res.status(500).json({
