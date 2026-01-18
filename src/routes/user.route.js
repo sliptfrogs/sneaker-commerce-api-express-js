@@ -8,7 +8,9 @@ import { authorizeRoles } from "../middlewares/role.middleware.js";
 const userRouter = Router();
 
 // Get All Users
-userRouter.get('/',protect, authorizeRoles('ADMIN'),getUsers)
+userRouter.get('/', protect,
+    /*authorizeRoles('ADMIN')*/
+     getUsers)
 // CREATE
 userRouter.post('/',validateUserRequest,handleValidationError, createUser)
 
