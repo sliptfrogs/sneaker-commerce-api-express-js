@@ -1,6 +1,0 @@
-#Start docker
-docker compose up -d
-#Stop Docker compose
-docker compose down
-#start app as dev mode
-docker compose logs -f app
