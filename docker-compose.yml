@@ -1,0 +1,33 @@
+version: '3.9'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - PORT=3000
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASS=1234
+      - DB_NAME=sneaker
+    depends_on:
+      - db
+    command: npx nodemon app.js
+
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: sneaker
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
