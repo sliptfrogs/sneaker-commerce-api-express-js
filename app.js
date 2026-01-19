@@ -6,6 +6,7 @@ import { errorHandlingMiddleware } from './src/middlewares/errorHandling.middlew
 import authRouter from './src/routes/auth.route.js';
 import categoryRouter from './src/routes/category.route.js';
 import brandRouter from './src/routes/brand.route.js';
+import likeRoute from './src/routes/like.route.js';
 
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(ROUTE_URL+'/user', userRouter);
 app.use(ROUTE_URL+'/auth', authRouter);
 app.use(ROUTE_URL + '/category', categoryRouter)
 app.use(ROUTE_URL + '/brand', brandRouter)
+app.use(ROUTE_URL+'/like', likeRoute)
 
 const PORT = process.env.PORT || 3000;
 

@@ -3,6 +3,7 @@ import { Category } from "./category.model.js";
 import { Order } from "./order.model.js";
 import { ProductImage } from "./product.image.model.js";
 import { Reviews } from "./product.reviews.model.js";
+import { ProductLike } from "./productLike.model.js";
 import { Product } from "./products.model.js";
 import { Tag } from "./tag.model.js";
 import { UserAddress } from "./user.address.model.js";
@@ -89,12 +90,12 @@ Product.belongsToMany(User, {
 });
 // Product - Like Relationship (Many-to-Many)
 User.belongsToMany(Product, {
-  through: "UserLikes",
+  through: ProductLike,
   as: "LikedProducts",
   foreignKey: "user_id",
 });
 Product.belongsToMany(User, {
-  through: "UserLikes",
+  through: ProductLike,
   as: "UsersWhoLiked",
   foreignKey: "product_id",
 });
@@ -135,4 +136,5 @@ export {
   ProductImage,
   Reviews,
   Order,
+  ProductLike
 };
