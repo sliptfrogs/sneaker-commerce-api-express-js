@@ -12,7 +12,7 @@ export const getAllBrands = async (req, res) => {
 export const getBrandById = async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const data = await BrandService.getBrandById(id);
+    const data = await BrandService.findBrandById(id);
     res.status(200).json({ statusCode: 200, message: "Get data successfully", data });
   } catch (err) {
     res.status(err.statusCode || 500).json({ statusCode: err.statusCode || 500, message: err.message });

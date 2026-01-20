@@ -3,6 +3,7 @@ import { Category } from "./category.model.js";
 import { Order } from "./order.model.js";
 import { ProductImage } from "./product.image.model.js";
 import { Reviews } from "./product.reviews.model.js";
+import { ProductLike } from "./productLike.model.js";
 import { Product } from "./products.model.js";
 import { Tag } from "./tag.model.js";
 import { UserAddress } from "./user.address.model.js";
@@ -47,7 +48,7 @@ Category.hasMany(Product, {
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
-Product.belongsTo(Category, { foreignKey: "category_id" });
+Product.belongsTo(Category, { foreignKey: "category_id", as: 'category' });
 
 // Brand - Product Relationship
 Brand.hasMany(Product, {
@@ -55,7 +56,7 @@ Brand.hasMany(Product, {
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
-Product.belongsTo(Brand, { foreignKey: "brand_id" });
+Product.belongsTo(Brand, { foreignKey: "brand_id",as: 'brand' });
 // Product - Tag Relationship (Many-to-Many)
 Product.belongsToMany(Tag, {
   through: "ProductTags",
@@ -89,12 +90,12 @@ Product.belongsToMany(User, {
 });
 // Product - Like Relationship (Many-to-Many)
 User.belongsToMany(Product, {
-  through: "UserLikes",
+  through: ProductLike,
   as: "LikedProducts",
   foreignKey: "user_id",
 });
 Product.belongsToMany(User, {
-  through: "UserLikes",
+  through: ProductLike,
   as: "UsersWhoLiked",
   foreignKey: "product_id",
 });
@@ -122,6 +123,8 @@ Product.belongsToMany(Order, {
   foreignKey: "product_id",
   otherKey: "order_id",
 });
+User.hasMany(Product, {foreignKey: 'created_by'});
+Product.belongsTo(User, {foreignKey: 'created_by'})
 
 
 export {
@@ -135,4 +138,5 @@ export {
   ProductImage,
   Reviews,
   Order,
+  ProductLike
 };
