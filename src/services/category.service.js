@@ -40,7 +40,6 @@ export const getCategoryService = async (id) => {
         id,
       },
     });
-
     if (!category) {
       throw new ApiError("Category not found", 400);
     }

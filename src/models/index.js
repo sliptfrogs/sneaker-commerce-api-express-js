@@ -48,7 +48,7 @@ Category.hasMany(Product, {
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
-Product.belongsTo(Category, { foreignKey: "category_id" });
+Product.belongsTo(Category, { foreignKey: "category_id", as: 'category' });
 
 // Brand - Product Relationship
 Brand.hasMany(Product, {
@@ -56,7 +56,7 @@ Brand.hasMany(Product, {
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
-Product.belongsTo(Brand, { foreignKey: "brand_id" });
+Product.belongsTo(Brand, { foreignKey: "brand_id",as: 'brand' });
 // Product - Tag Relationship (Many-to-Many)
 Product.belongsToMany(Tag, {
   through: "ProductTags",
@@ -123,6 +123,8 @@ Product.belongsToMany(Order, {
   foreignKey: "product_id",
   otherKey: "order_id",
 });
+User.hasMany(Product, {foreignKey: 'created_by'});
+Product.belongsTo(User, {foreignKey: 'created_by'})
 
 
 export {

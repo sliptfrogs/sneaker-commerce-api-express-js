@@ -16,3 +16,13 @@ export const createUserService = async(userData)=>{
     }
     return user;
 }
+export const findUserById=async(id)=>{
+    try {
+        const user = await User.findByPk(id);
+        if(!user){
+            throw new ApiError('User not found', 404)
+        }
+    } catch (error) {
+        throw new ApiError(error.message, error.statusMessage)
+    }
+}
