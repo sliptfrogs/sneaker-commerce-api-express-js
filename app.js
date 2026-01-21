@@ -10,7 +10,7 @@ import likeRoute from "./src/routes/like.route.js";
 import productRoute from "./src/routes/product.route.js";
 import productReviewRouter from "./src/routes/review.route.js";
 import wishlistRouter from "./src/routes/wishlist.route.js";
-
+import favoriteRouter from "./src/routes/favorite.route.js";
 const app = express();
 const ROUTE_URL = "/v1/api";
 
@@ -27,6 +27,7 @@ app.use(ROUTE_URL + "/like", likeRoute);
 app.use(ROUTE_URL + "/product", productRoute);
 app.use(ROUTE_URL + "/review", productReviewRouter);
 app.use(ROUTE_URL + "/wishlist", wishlistRouter);
+app.use(ROUTE_URL + "/favorite", favoriteRouter);
 
 const PORT = process.env.PORT || 3000;
 
