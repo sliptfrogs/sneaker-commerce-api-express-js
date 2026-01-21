@@ -92,7 +92,7 @@ export const getProductsService = async () => {
       include: [
         {
           model: ProductImage,
-          as: "product_image",
+          as: "images",
         },
       ],
     });

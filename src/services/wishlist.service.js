@@ -34,6 +34,7 @@ export const getUserWishlistByUserId = async (id) => {
         },
         {
           model: UserProfile,
+          as:'profile',
           attributes: ['id', 'first_name', 'last_name', 'phone_number','avatar_url']
         }
       ],
