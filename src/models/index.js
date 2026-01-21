@@ -9,6 +9,7 @@ import { Tag } from "./tag.model.js";
 import { UserAddress } from "./user.address.model.js";
 import { User } from "./user.model.js";
 import { UserProfile } from "./user.profile.model.js";
+import { Wishlist } from "./wishlist.model.js";
 
 /* [User Relational] */
 // Defining One-to-One relationship between User and UserProfile
@@ -79,13 +80,15 @@ Product.hasMany(ProductImage, {
 ProductImage.belongsTo(Product, { foreignKey: "product_id" });
 // Product - Wishlist Relationship (Many-to-Many)
 User.belongsToMany(Product, {
-  through: "Wishlist",
-  as: "WishlistProducts",
+  through: Wishlist,
+  as: "wishlistProducts",
   foreignKey: "user_id",
+  otherKey: 'product_id'
 });
 Product.belongsToMany(User, {
-  through: "Wishlist",
-  as: "UsersWhoWishlisted",
+  through: Wishlist,
+  as: "wishlistedByUsers",
+  otherKey:'user_id',
   foreignKey: "product_id",
 });
 // Product - Like Relationship (Many-to-Many)
@@ -138,5 +141,6 @@ export {
   ProductImage,
   Reviews,
   Order,
-  ProductLike
+  ProductLike,
+  Wishlist
 };
