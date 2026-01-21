@@ -6,7 +6,7 @@ import { protect } from '../middlewares/auth.middleware.js';
 
 const productRoute = Router();
 
-productRoute.post('/',protect, productValidation,handleValidationError,createProductController)
+productRoute.post('/',protect,productValidation,handleValidationError,createProductController)
 productRoute.get('/', getProductsController)
 // productRoute.get('/category/:id',getProductsViaCategoryController)
 productRoute.get('/:id', getProductController)

@@ -18,11 +18,10 @@ export const authRegisterService = async (userReq) => {
         password_hash: await GeneratePassword(userReq?.password_hash),
         role: userReq?.role,
       },
-      transaction: t
+      transaction: t,
     });
 
-
-    if(!created){
+    if (!created) {
       throw new ApiError("Email already exist", 409);
     }
 
@@ -53,7 +52,7 @@ export const authLoginService = async (userReq) => {
       attributes: ["id", "email", "role", "password_hash"],
     });
 
-    // return user.password_hash;
+    if (!user) throw new ApiError("User not found", 404);
 
     const isMatch = await bcrypt.compare(
       userReq.password_hash,
@@ -64,20 +63,12 @@ export const authLoginService = async (userReq) => {
       throw new ApiError("Invalid email or password", 401);
     }
 
-    const tokens = generateTokens({id: user.id, role: user.role});
+    const tokens = generateTokens({ id: user.id, role: user.role });
 
-
-
-
-
-
-
-
-    // NEVER return password_hash
     return {
       id: user.id,
       email: user.email,
-      tokens
+      tokens,
     };
   } catch (error) {
     throw new ApiError(error.message, error.statusCode || 500);

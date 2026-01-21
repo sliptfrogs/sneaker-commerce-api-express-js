@@ -14,16 +14,35 @@ import { authorizeRoles } from "../middlewares/role.middleware.js";
 const categoryRouter = Router();
 
 categoryRouter.post(
-  "",
+  "/",
+  protect,
+  authorizeRoles("ADMIN"),
   cateogryValidateRequest,
   handleValidationError,
   createCategoryController,
 );
-categoryRouter.get("", getCategoriesController);
-categoryRouter.get("/:id", getCategoryController);
-categoryRouter.delete("/:id", destroyCategoryController);
+categoryRouter.get(
+  "/",
+  protect,
+  authorizeRoles("ADMIN"),
+  getCategoriesController,
+);
+categoryRouter.get(
+  "/:id",
+  protect,
+  authorizeRoles("ADMIN"),
+  getCategoryController,
+);
+categoryRouter.delete(
+  "/:id",
+  protect,
+  authorizeRoles("ADMIN"),
+  destroyCategoryController,
+);
 categoryRouter.patch(
   "/:id",
+  protect,
+  authorizeRoles("ADMIN"),
   cateogryValidateRequest,
   handleValidationError,
   updateCategoryController,
