@@ -53,7 +53,7 @@ export const getProductController = async (req, res) => {
 };
 export const updateProductController = async (req, res) => {
   try {
-    await updateProductService(req.params.id, req.body);
+    await updateProductService(req.params.id, req);
     sendSuccessResponse(res, [], "Updated");
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode);

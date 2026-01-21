@@ -74,10 +74,11 @@ Reviews.belongsTo(Product, { foreignKey: "product_id" });
 // Product - Image Relationship
 Product.hasMany(ProductImage, {
   foreignKey: "product_id",
+  as:'product_image',
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
-ProductImage.belongsTo(Product, { foreignKey: "product_id" });
+ProductImage.belongsTo(Product, { foreignKey: "product_id",as:'product_image' });
 // Product - Wishlist Relationship (Many-to-Many)
 User.belongsToMany(Product, {
   through: Wishlist,

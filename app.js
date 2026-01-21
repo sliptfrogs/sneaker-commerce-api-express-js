@@ -16,6 +16,9 @@ const ROUTE_URL = "/v1/api";
 
 app.use(express.json()); // enable when you need JSON body parsing
 
+app.use("/uploads", express.static("public/uploads"));
+
+
 app.use(ROUTE_URL + "/user", userRouter);
 app.use(ROUTE_URL + "/auth", authRouter);
 app.use(ROUTE_URL + "/category", categoryRouter);

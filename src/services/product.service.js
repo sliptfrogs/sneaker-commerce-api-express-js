@@ -1,8 +1,10 @@
 import { UniqueConstraintError } from "sequelize";
+import { sequelize } from "../config/SequelizeORM.js";
 import {
   Brand,
   Category,
   Product,
+  ProductImage,
   Reviews,
   User,
   UserProfile,
@@ -14,36 +16,62 @@ import { findUserById } from "./user.service.js";
 
 export const createProductService = async (req) => {
   const reqBody = req.body;
+  const t = await sequelize.transaction();
   try {
     // Find Category with id before create product
     await getCategoryService(reqBody.category_id);
     await findBrandById(reqBody.brand_id);
     await findUserById(req.user.id);
 
-    await Product.create({
-      title: reqBody?.title,
-      description: reqBody?.description,
-      category_id: reqBody?.category_id,
-      brand_id: reqBody?.brand_id,
-      created_by: req?.user.id,
-      price: reqBody?.price,
-      discount_percentage: reqBody?.discount_percentage ?? 0,
-      stock: reqBody?.stock,
-      sku: reqBody?.sku,
-      weight: reqBody?.weight,
-      width: reqBody?.width,
-      height: reqBody?.height,
-      warranty_infor: reqBody?.warranty_infor,
-      shipping_infor: reqBody?.shipping_infor,
-      availability_status: reqBody?.availability_status,
-      return_policy: reqBody?.return_policy,
-      minimum_order_quantity: reqBody?.minimum_order_quantity,
-      barcode_url: reqBody?.barcode_url,
-      qr_code_url: reqBody?.qr_code_url,
-      thumbnail_url: reqBody?.thumbnail,
-    });
+    // Files
+    const thumbnailFile = req.files.thumbnail[0];
+    const barcodeFile = req.files.barcode_url[0];
+    const qrCodeFile = req.files.qr_code_url[0];
+
+    // Build URL (to save in DB)
+    const thumbnailUrl = `/uploads/${thumbnailFile.filename}`;
+    const barcodeUrl = `/uploads/${barcodeFile.filename}`;
+    const qrCodeUrl = `/uploads/${qrCodeFile.filename}`;
+
+    const product = await Product.create(
+      {
+        title: reqBody?.title,
+        description: reqBody?.description,
+        category_id: reqBody?.category_id,
+        brand_id: reqBody?.brand_id,
+        created_by: req?.user.id,
+        price: reqBody?.price,
+        discount_percentage: reqBody?.discount_percentage ?? 0,
+        stock: reqBody?.stock,
+        sku: reqBody?.sku,
+        weight: reqBody?.weight,
+        width: reqBody?.width,
+        height: reqBody?.height,
+        warranty_infor: reqBody?.warranty_infor,
+        shipping_infor: reqBody?.shipping_infor,
+        availability_status: reqBody?.availability_status,
+        return_policy: reqBody?.return_policy,
+        minimum_order_quantity: reqBody?.minimum_order_quantity,
+        barcode_url: barcodeUrl,
+        qr_code_url: qrCodeUrl,
+        thumbnail_url: thumbnailUrl,
+      },
+      {
+        transaction: t,
+      },
+    );
+    const imagesData = req.files.product_images.map((file) => ({
+      image_url: `/uploads/${file.filename}`,
+      product_id: product.id,
+    }));
+
+    await ProductImage.bulkCreate(imagesData, { transaction: t });
+
+    t.commit();
+
     return;
   } catch (error) {
+    await t.rollback();
     if (error instanceof UniqueConstraintError) {
       const duplicatedFields = error.errors.map((e) => ({
         field: e.path,
@@ -60,7 +88,14 @@ export const createProductService = async (req) => {
 };
 export const getProductsService = async () => {
   try {
-    const products = await Product.findAll();
+    const products = await Product.findAll({
+      include: [
+        {
+          model: ProductImage,
+          as: "product_image",
+        },
+      ],
+    });
 
     return products;
   } catch (error) {
@@ -142,7 +177,9 @@ export const getProductByIdService = async (id) => {
   }
 };
 
-export const updateProductService = async (productId, reqBody) => {
+export const updateProductService = async (productId, req) => {
+  const reqBody = req.body;
+  const t = await sequelize.transaction();
   try {
     console.log("request body", reqBody);
 
@@ -153,38 +190,62 @@ export const updateProductService = async (productId, reqBody) => {
     await getCategoryService(reqBody.category_id);
     await findBrandById(reqBody.brand_id);
 
-    await findExist.update({
-      title: reqBody?.title,
-      description: reqBody?.description,
-      category_id: reqBody?.category_id,
-      brand_id: reqBody?.brand_id,
-      price: reqBody?.price,
-      discount_percentage: reqBody?.discount_percentage ?? 0,
-      stock: reqBody?.stock,
-      sku: reqBody?.sku,
-      weight: reqBody?.weight,
-      width: reqBody?.width,
-      height: reqBody?.height,
-      warranty_infor: reqBody?.warranty_infor,
-      shipping_infor: reqBody?.shipping_infor,
-      availability_status: reqBody?.availability_status,
-      return_policy: reqBody?.return_policy,
-      minimum_order_quantity: reqBody?.minimum_order_quantity,
-      barcode_url: reqBody?.barcode_url,
-      qr_code_url: reqBody?.qr_code_url,
-      thumbnail_url: reqBody?.thumbnail,
-    });
+    // Files
+    const thumbnailFile = req.files.thumbnail[0];
+    const barcodeFile = req.files.barcode_url[0];
+    const qrCodeFile = req.files.qr_code_url[0];
+
+    // Build URL (to save in DB)
+    const thumbnailUrl = `/uploads/${thumbnailFile.filename}`;
+    const barcodeUrl = `/uploads/${barcodeFile.filename}`;
+    const qrCodeUrl = `/uploads/${qrCodeFile.filename}`;
+
+    await findExist.update(
+      {
+        title: reqBody?.title,
+        description: reqBody?.description,
+        category_id: reqBody?.category_id,
+        brand_id: reqBody?.brand_id,
+        price: reqBody?.price,
+        discount_percentage: reqBody?.discount_percentage ?? 0,
+        stock: reqBody?.stock,
+        sku: reqBody?.sku,
+        weight: reqBody?.weight,
+        width: reqBody?.width,
+        height: reqBody?.height,
+        warranty_infor: reqBody?.warranty_infor,
+        shipping_infor: reqBody?.shipping_infor,
+        availability_status: reqBody?.availability_status,
+        return_policy: reqBody?.return_policy,
+        minimum_order_quantity: reqBody?.minimum_order_quantity,
+        barcode_url: barcodeUrl,
+        qr_code_url: qrCodeUrl,
+        thumbnail_url: thumbnailUrl,
+      },
+      {
+        transaction: t,
+      },
+    );
+    const imagesData = req.files.product_images.map((file) => ({
+      image_url: `/uploads/${file.filename}`,
+      product_id: findExist.id,
+    }));
+
+    await ProductImage.bulkCreate(imagesData, { transaction: t });
+
+    await t.commit();
     return findExist;
   } catch (error) {
+    await t.rollback();
     throw new ApiError(error.message, error.statusCode);
   }
 };
 export const destroyProductService = async (productId) => {
   try {
     const productDelete = await Product.findByPk(productId);
-    if(!productDelete){
-      throw new ApiError('Product to Delete not found', 404)
-    };
+    if (!productDelete) {
+      throw new ApiError("Product to Delete not found", 404);
+    }
     await productDelete.destroy();
   } catch (error) {
     throw new ApiError(error.message, error.statusCode);
