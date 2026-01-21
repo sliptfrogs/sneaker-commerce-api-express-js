@@ -9,7 +9,7 @@ import { Tag } from "./tag.model.js";
 import { UserAddress } from "./user.address.model.js";
 import { User } from "./user.model.js";
 import { UserProfile } from "./user.profile.model.js";
-
+import { Favorite } from "./favorite.model.js";
 /* [User Relational] */
 // Defining One-to-One relationship between User and UserProfile
 User.hasOne(UserProfile, {
@@ -127,6 +127,31 @@ User.hasMany(Product, {foreignKey: 'created_by'});
 Product.belongsTo(User, {foreignKey: 'created_by'})
 
 
+// New Line Added by Developer HONG Handsome man
+// Favorite belongsTo relationships (optional)
+// Favorite.belongsTo(User, { foreignKey: "user_id"  });
+// Favorite.belongsTo(Product, { foreignKey: "product_id" });
+// User ↔ Favorite
+// User ↔ Product through Favorite
+User.belongsToMany(Product, {
+  through: Favorite,       // join table
+  as: "favoriteProducts",  // alias for easy querying
+  foreignKey: "user_id",
+});
+
+Product.belongsToMany(User, {
+  through: Favorite,
+  as: "usersWhoFavorited",
+  foreignKey: "product_id",
+});
+
+// User ↔ UserProfile
+User.hasOne(UserProfile, { foreignKey: "user_id", as: "profile" });
+UserProfile.belongsTo(User, { foreignKey: "user_id" });
+
+
+//  
+
 export {
   User,
   UserProfile,
@@ -138,5 +163,6 @@ export {
   ProductImage,
   Reviews,
   Order,
-  ProductLike
+  ProductLike,
+  Favorite
 };
