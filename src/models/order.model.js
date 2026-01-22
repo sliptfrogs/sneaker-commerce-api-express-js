@@ -2,30 +2,24 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../config/SequelizeORM.js";
 import { User } from "./user.model.js";
 
-
-
-export const Order = sequelize.define("order_tb",{
-
-    status:{
-        type: DataTypes.ENUM('PENDING', 'SHIPPED', 'DELIVERED', 'CANCELLED'),
-        defaultValue: 'PENDING'
+export const Order = sequelize.define(
+  "order_tb",
+  {
+    status: {
+      type: DataTypes.ENUM("PENDING", "PAID", "FAILED"),
+      defaultValue: "PENDING",
+      allowNull: false,
     },
-    total: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false,
-        defaultValue: 0.00
+    payment_method: {
+      type: DataTypes.ENUM("CREDIT_CARD", "FAKE_BANK", "CASH"),
+      defaultValue: "CREDIT_CARD",
+      allowNull: false,
     },
-    user_id:{
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id'
-        },
+    total_amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
     },
-    created_at:{
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
-    },
-})
-
+  },
+  { timestamps: true },
+);

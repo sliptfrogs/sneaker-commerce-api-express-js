@@ -11,13 +11,13 @@ import productRoute from "./src/routes/product.route.js";
 import productReviewRouter from "./src/routes/review.route.js";
 import wishlistRouter from "./src/routes/wishlist.route.js";
 import favoriteRouter from "./src/routes/favorite.route.js";
+import orderRoute from "./src/routes/order.route.js";
 const app = express();
 const ROUTE_URL = "/v1/api";
 
 app.use(express.json()); // enable when you need JSON body parsing
 
 app.use("/uploads", express.static("public/uploads"));
-
 
 app.use(ROUTE_URL + "/user", userRouter);
 app.use(ROUTE_URL + "/auth", authRouter);
@@ -28,6 +28,7 @@ app.use(ROUTE_URL + "/product", productRoute);
 app.use(ROUTE_URL + "/review", productReviewRouter);
 app.use(ROUTE_URL + "/wishlist", wishlistRouter);
 app.use(ROUTE_URL + "/favorite", favoriteRouter);
+app.use(ROUTE_URL + "/orders", orderRoute);
 
 const PORT = process.env.PORT || 3000;
 
