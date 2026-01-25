@@ -50,11 +50,24 @@ export const productValidation = [
     .toFloat()
     .isFloat()
     .withMessage("Weight must be decimal"),
-  body("size")
+  body("sizes")
     .optional()
-    .toFloat()
-    .isFloat()
-    .withMessage("Size must be Float/Decimal"),
+    .customSanitizer((value) => {
+      // If the field is a string (like "[21,23,55]") → parse it
+      if (typeof value === "string") {
+        try {
+          return JSON.parse(value); // "[21,23,55]" -> [21,23,55]
+        } catch {
+          return []; // fallback if invalid JSON
+        }
+      }
+      return value; // already array
+    })
+    .isArray()
+    .withMessage("Size must be an array")
+    .bail()
+    .custom((arr) => arr.every((item) => !isNaN(parseFloat(item))))
+    .withMessage("Each size must be a float/decimal"),
   body("height")
     .optional()
     .toInt()
@@ -239,4 +252,3 @@ export const productUpdateValidation = [
     return true;
   }),
 ];
-

@@ -9,6 +9,7 @@ import {
   User,
   UserProfile,
   Order,
+  ProductSize,
 } from "../models/index.js";
 import { ApiError } from "../utils/ApiError.util.js";
 import { findBrandById } from "./brand.service.js";
@@ -18,12 +19,19 @@ import { OrderItems } from "../models/order.items.model.js";
 
 export const createProductService = async (req) => {
   const reqBody = req.body;
+
+
+
+
+
   const t = await sequelize.transaction();
   try {
     // Find Category with id before create product
+    console.log('request', reqBody);
     await getCategoryService(reqBody.category_id);
     await findBrandById(reqBody.brand_id);
     await findUserById(req.user.id);
+
 
     // Files
     const thumbnailFile = req.files.thumbnail[0];
@@ -34,6 +42,7 @@ export const createProductService = async (req) => {
     const thumbnailUrl = `/uploads/${thumbnailFile.filename}`;
     const barcodeUrl = `/uploads/${barcodeFile.filename}`;
     const qrCodeUrl = `/uploads/${qrCodeFile.filename}`;
+
 
     const product = await Product.create(
       {
@@ -46,7 +55,6 @@ export const createProductService = async (req) => {
         discount_percentage: reqBody?.discount_percentage ?? 0,
         stock: reqBody?.stock,
         sku: reqBody?.sku,
-        size: reqBody?.size,
         weight: reqBody?.weight,
         width: reqBody?.width,
         height: reqBody?.height,
@@ -63,12 +71,25 @@ export const createProductService = async (req) => {
         transaction: t,
       },
     );
+
     const imagesData = req.files.product_images.map((file) => ({
       image_url: `/uploads/${file.filename}`,
       product_id: product.id,
     }));
 
     await ProductImage.bulkCreate(imagesData, { transaction: t });
+
+
+
+    // console.log('request', sizes);
+
+    await ProductSize.bulkCreate(
+      reqBody.sizes.map((size) => ({
+        size,
+        product_id: product.id,
+      })),
+      { transaction: t },
+    );
 
     t.commit();
 
@@ -96,7 +117,13 @@ export const getProductsService = async () => {
         {
           model: ProductImage,
           as: "images",
+          attributes: ["image_url"],
         },
+        {
+          model: ProductSize,
+          as: "sizes",
+          attributes: ['size']
+        }
       ],
     });
 

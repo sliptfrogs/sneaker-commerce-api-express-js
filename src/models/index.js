@@ -15,6 +15,7 @@ import { FakeBankAccount } from "./fake.bank.account.model.js";
 import { Payment } from "./payment.model.js";
 import { OrderItems } from "./order.items.model.js";
 import { RecentlyViewed } from "./recently.viewed.model.js";
+import { ProductSize } from "./product.size.model.js";
 
 /* [User Relational] */
 // One-to-One: User ↔ UserProfile
@@ -91,6 +92,18 @@ Product.hasMany(ProductImage, {
 });
 ProductImage.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 
+// Product ↔ ProductSize (One-to-Many)
+Product.hasMany(ProductSize, {
+  foreignKey: "product_id",
+  as: "sizes",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+ProductSize.belongsTo(Product, {
+  foreignKey: "product_id",
+  as: "product",
+});
+
 // Product ↔ Wishlist (Many-to-Many)
 User.belongsToMany(Product, {
   through: Wishlist,
@@ -165,8 +178,6 @@ Product.hasMany(OrderItems, {
 });
 OrderItems.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 
-
-
 Order.hasOne(Payment, {
   foreignKey: "order_id", // FK stored in PaymentTransaction
   as: "payment", // alias to use in includes
@@ -194,7 +205,6 @@ Product.belongsToMany(User, {
   as: "usersWhoViewed",
 });
 
-
 export {
   User,
   UserProfile,
@@ -204,6 +214,7 @@ export {
   Product,
   Tag,
   ProductImage,
+  ProductSize,
   Reviews,
   Order,
   ProductLike,
@@ -211,5 +222,5 @@ export {
   Favorite,
   FakeBankAccount,
   Payment,
-  RecentlyViewed
+  RecentlyViewed,
 };

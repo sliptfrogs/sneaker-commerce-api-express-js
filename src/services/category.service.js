@@ -42,7 +42,7 @@ export const getCategoryService = async (id) => {
     });
 
     if (!category) {
-      throw new ApiError("Category not found", 400);
+      throw new ApiError("Category not found", 404);
     }
     return category;
   } catch (error) {
