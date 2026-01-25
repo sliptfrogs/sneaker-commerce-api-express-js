@@ -38,7 +38,7 @@ async function start() {
   try {
     await sequelize.authenticate();
     console.log("DB connected");
-    await sequelize.sync({ alter: true }); // or { alter: true } in dev only
+    await sequelize.sync(); // or { alter: true } in dev only
     console.log("Models synced");
 
     app.use(errorHandlingMiddleware);
