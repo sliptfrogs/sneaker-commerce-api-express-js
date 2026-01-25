@@ -203,6 +203,17 @@ export const PayUserOrderService = async (userId, orderId, cardNumber) => {
     return { order, payment };
   } catch (err) {
     await t.rollback();
-    throw new ApiError(err.message, err.statusCode || 500);
+
+    // Surface validation / unique constraint details if present
+    if (err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError") {
+      const details = err.errors?.map((e) => ({
+        message: e.message,
+        path: e.path,
+        value: e.value,
+      })) || [];
+      throw new ApiError("Payment validation error", 400, details);
+    }
+
+    throw new ApiError(err.message, err.statusCode || 500, err.errors || []);
   }
 };

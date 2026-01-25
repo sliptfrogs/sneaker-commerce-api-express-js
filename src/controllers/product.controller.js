@@ -2,6 +2,7 @@ import {
   createProductService,
   destroyProductService,
   getAllProductsViaCategoryService,
+  getPopularProductsService,
   getProductByIdService,
   getProductsService,
   updateProductService,
@@ -67,3 +68,14 @@ export const destroyProductController = async (req, res) => {
         sendErrorResponse(res, error.message, error.statusCode)
     }
 };
+/**
+ * Get Popular Products
+ */
+export const getPopularProductsController=async(req,res)=>{
+    try {
+      const popularProducts=await getPopularProductsService();
+      sendSuccessResponse(res, popularProducts, "Success");
+    } catch (error) {
+        sendErrorResponse(res, error.message, error.statusCode)
+    }
+}

@@ -27,6 +27,6 @@ export const createFakeBankAccountController=async(req,res)=>{
       await createFakeBankAccountService(req.body.user_id, req.body);
       sendSuccessResponse(res, {}, "Fake bank account created successfully");
   } catch (error) {
-      sendErrorResponse(res, error.message, error.statusCode || 500);
+      sendErrorResponse(res, error.message, error.statusCode || 500, error);
   }
 }

@@ -165,6 +165,8 @@ Product.hasMany(OrderItems, {
 });
 OrderItems.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 
+
+
 Order.hasOne(Payment, {
   foreignKey: "order_id", // FK stored in PaymentTransaction
   as: "payment", // alias to use in includes

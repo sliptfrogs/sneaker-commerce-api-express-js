@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createProductController,
   destroyProductController,
+  getPopularProductsController,
   getProductController,
   getProductsController,
   getProductsViaCategoryController,
@@ -33,7 +34,11 @@ productRoute.post(
   createProductController,
 );
 
-productRoute.get("/", getProductsController);
+productRoute.get("/",protect, getProductsController);
+/**
+ * Get Popular Products
+ */
+productRoute.get('/popular',getPopularProductsController)
 // productRoute.get('/category/:id',getProductsViaCategoryController)
 productRoute.get("/:id", getProductController);
 productRoute.patch(

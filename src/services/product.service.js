@@ -1,4 +1,4 @@
-import { UniqueConstraintError } from "sequelize";
+import { col, fn, literal, UniqueConstraintError } from "sequelize";
 import { sequelize } from "../config/SequelizeORM.js";
 import {
   Brand,
@@ -8,11 +8,13 @@ import {
   Reviews,
   User,
   UserProfile,
+  Order,
 } from "../models/index.js";
 import { ApiError } from "../utils/ApiError.util.js";
 import { findBrandById } from "./brand.service.js";
 import { getCategoryService } from "./category.service.js";
 import { findUserById } from "./user.service.js";
+import { OrderItems } from "../models/order.items.model.js";
 
 export const createProductService = async (req) => {
   const reqBody = req.body;
@@ -252,4 +254,44 @@ export const destroyProductService = async (productId) => {
   } catch (error) {
     throw new ApiError(error.message, error.statusCode);
   }
+};
+
+export const getPopularProductsService = async (limit = 10) => {
+  const popularProducts = await Product.findAll({
+    include: [
+      {
+        model: OrderItems,
+        as: "orderItems", // must match association in models/index.js
+        attributes: [],
+        required: true, // only products that have at least one matching order item
+        include: [
+          {
+            model: Order,
+            as: "order", // must match OrderItems → Order association (models/index.js)
+            attributes: [],
+            required: true,
+            where: { status: "PAID" }, // only count items from PAID orders
+          },
+        ],
+      },
+      {
+        model: ProductImage,
+        as: "images",
+        separate: true, // load images in a separate query to avoid GROUP BY issues
+      },
+    ],
+    attributes: [
+      "id",
+      "title",
+      "price",
+      "thumbnail_url",
+      [fn("COALESCE", fn("SUM", col("orderItems.quantity")), 0), "total_sold"],
+    ],
+    group: [col("product_tb.id")],
+    order: [[literal('"total_sold"'), "DESC"]],
+    limit,
+    subQuery: false,
+  });
+
+  return popularProducts;
 };

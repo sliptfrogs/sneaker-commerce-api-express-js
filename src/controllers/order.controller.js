@@ -25,6 +25,6 @@ export const payUserOrderController=async(req,res)=>{
        const order = await PayUserOrderService(req.user.id, req.body.orderId, req.body.card_number);
         sendSuccessResponse(res, order, 'Done', )
     } catch (error) {
-        sendErrorResponse(res, error.message, error.statusCode)
+        sendErrorResponse(res, error.message, error.statusCode, error)
     }
 }
