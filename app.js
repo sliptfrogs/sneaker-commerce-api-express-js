@@ -12,6 +12,7 @@ import productReviewRouter from "./src/routes/review.route.js";
 import wishlistRouter from "./src/routes/wishlist.route.js";
 import favoriteRouter from "./src/routes/favorite.route.js";
 import orderRoute from "./src/routes/order.route.js";
+import recentlyViewRoute from "./src/routes/recently.view.route.js";
 const app = express();
 const ROUTE_URL = "/v1/api";
 
@@ -29,6 +30,7 @@ app.use(ROUTE_URL + "/review", productReviewRouter);
 app.use(ROUTE_URL + "/wishlist", wishlistRouter);
 app.use(ROUTE_URL + "/favorite", favoriteRouter);
 app.use(ROUTE_URL + "/orders", orderRoute);
+app.use(ROUTE_URL + "/recently-viewed", recentlyViewRoute);
 
 const PORT = process.env.PORT || 3000;
 
@@ -36,7 +38,6 @@ async function start() {
   try {
     await sequelize.authenticate();
     console.log("DB connected");
-
     await sequelize.sync({ alter: true }); // or { alter: true } in dev only
     console.log("Models synced");
 

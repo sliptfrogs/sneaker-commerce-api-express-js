@@ -14,6 +14,7 @@ import { Favorite } from "./favorite.model.js";
 import { FakeBankAccount } from "./fake.bank.account.model.js";
 import { Payment } from "./payment.model.js";
 import { OrderItems } from "./order.items.model.js";
+import { RecentlyViewed } from "./recently.viewed.model.js";
 
 /* [User Relational] */
 // One-to-One: User ↔ UserProfile
@@ -176,6 +177,22 @@ Payment.belongsTo(Order, {
   as: "order",
 });
 
+// User ↔ Product (Many-to-Many) recently viewed
+User.belongsToMany(Product, {
+  through: RecentlyViewed,
+  foreignKey: "user_id",
+  otherKey: "product_id",
+  as: "recentlyViewedProducts",
+});
+
+Product.belongsToMany(User, {
+  through: RecentlyViewed,
+  foreignKey: "product_id",
+  otherKey: "user_id",
+  as: "usersWhoViewed",
+});
+
+
 export {
   User,
   UserProfile,
@@ -192,4 +209,5 @@ export {
   Favorite,
   FakeBankAccount,
   Payment,
+  RecentlyViewed
 };

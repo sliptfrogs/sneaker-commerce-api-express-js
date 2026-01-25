@@ -50,6 +50,11 @@ export const productValidation = [
     .toFloat()
     .isFloat()
     .withMessage("Weight must be decimal"),
+  body("size")
+    .optional()
+    .toFloat()
+    .isFloat()
+    .withMessage("Size must be Float/Decimal"),
   body("height")
     .optional()
     .toInt()

@@ -44,6 +44,7 @@ export const createProductService = async (req) => {
         discount_percentage: reqBody?.discount_percentage ?? 0,
         stock: reqBody?.stock,
         sku: reqBody?.sku,
+        size: reqBody?.size,
         weight: reqBody?.weight,
         width: reqBody?.width,
         height: reqBody?.height,
@@ -142,6 +143,7 @@ export const getProductByIdService = async (id) => {
                 {
                   model: UserProfile,
                   attributes: ["first_name", "last_name"],
+                  as: "profile",
                 },
               ],
             },

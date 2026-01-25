@@ -43,6 +43,10 @@ export const Product = sequelize.define(
       type: DataTypes.DECIMAL,
       allowNull: false,
     },
+    size: {
+      type: DataTypes.DECIMAL,
+      allowNull: false,
+    },
     discount_percentage: {
       type: DataTypes.DECIMAL(5, 2),
       defaultValue: 0,
