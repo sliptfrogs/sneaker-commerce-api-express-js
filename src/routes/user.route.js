@@ -10,7 +10,7 @@ const userRouter = Router();
 
 // Get All Users
 userRouter.get('/', protect,
-    /*authorizeRoles('ADMIN')*/
+    authorizeRoles('ADMIN'),
      getUsers)
 // CREATE
 userRouter.post('/',validateUserRequest,handleValidationError, createUser)

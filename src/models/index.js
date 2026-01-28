@@ -16,6 +16,8 @@ import { Payment } from "./payment.model.js";
 import { OrderItems } from "./order.items.model.js";
 import { RecentlyViewed } from "./recently.viewed.model.js";
 import { ProductSize } from "./product.size.model.js";
+import { Cart } from "./cart.model.js";
+import { CartItems } from "./cart.items.model.js";
 
 /* [User Relational] */
 // One-to-One: User ↔ UserProfile
@@ -205,6 +207,30 @@ Product.belongsToMany(User, {
   as: "usersWhoViewed",
 });
 
+// Cart ↔ Product (Many-to-Many) recently viewed
+Product.belongsToMany(Cart,{
+  through: CartItems,
+  foreignKey: "product_id",
+  otherKey: "cart_id",
+  as: "cartsContainingProduct",
+});
+Cart.belongsToMany(Product,{
+  through: CartItems,
+  foreignKey: "cart_id",
+  otherKey: "product_id",
+  as: "productsInCart",
+})
+
+// Cart ↔ User (One-to-One)
+User.hasOne(Cart,{
+  foreignKey: "user_id",
+  as: "cart",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+Cart.belongsTo(User,{ foreignKey: "user_id", as: "user" });
+
+
 export {
   User,
   UserProfile,
@@ -223,4 +249,5 @@ export {
   FakeBankAccount,
   Payment,
   RecentlyViewed,
+  Cart
 };

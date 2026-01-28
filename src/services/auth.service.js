@@ -1,4 +1,4 @@
-import { User, UserProfile } from "../models/index.js";
+import { FakeBankAccount, User, UserProfile } from "../models/index.js";
 import { ApiError } from "../utils/ApiError.util.js";
 import { sequelize } from "../config/SequelizeORM.js";
 import { GeneratePassword } from "../utils/PasswordGeneration.util.js";
@@ -50,6 +50,13 @@ export const authLoginService = async (userReq) => {
     const user = await User.findOne({
       where: { email: userReq.email },
       attributes: ["id", "email", "role", "password_hash"],
+      include: [
+        {
+          model: FakeBankAccount,
+          as: "bankAccount",
+          attributes: ["balance"]
+        },
+      ],
     });
 
     if (!user) throw new ApiError("User not found", 404);
@@ -63,11 +70,15 @@ export const authLoginService = async (userReq) => {
       throw new ApiError("Invalid email or password", 401);
     }
 
-    const tokens = generateTokens({ id: user.id, role: user.role });
+
+    const tokens = generateTokens({ id: user.id, role: user.role, balance: user.bankAccount ? user.bankAccount.balance : 0 });
 
     return {
       id: user.id,
       email: user.email,
+      balance: user.bankAccount ? user.bankAccount.balance : 0,
+      currency: "USD",
+      role: user.role,
       tokens,
     };
   } catch (error) {

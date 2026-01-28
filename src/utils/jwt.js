@@ -10,6 +10,7 @@ export const generateTokens = (user) => {
     {
       id: user.id,
       role: user.role,
+      balance: user.balance,
     },
     ACCESS_SECRET,
     {
