@@ -14,6 +14,7 @@ import favoriteRouter from "./src/routes/favorite.route.js";
 import orderRoute from "./src/routes/order.route.js";
 import recentlyViewRoute from "./src/routes/recently.view.route.js";
 import cartRouter from "./src/routes/cart.route.js";
+import couponRouter from "./src/routes/coupon.route.js";
 const app = express();
 const ROUTE_URL = "/v1/api";
 
@@ -33,6 +34,7 @@ app.use(ROUTE_URL + "/favorite", favoriteRouter);
 app.use(ROUTE_URL + "/orders", orderRoute);
 app.use(ROUTE_URL + "/recently-viewed", recentlyViewRoute);
 app.use(ROUTE_URL + "/cart", cartRouter);
+app.use(ROUTE_URL + "/coupon", couponRouter);
 
 const PORT = process.env.PORT || 3000;
 
@@ -40,7 +42,7 @@ async function start() {
   try {
     await sequelize.authenticate();
     console.log("DB connected");
-    await sequelize.sync(); // { force: true } to drop and recreate tables
+    await sequelize.sync({alter: true}); // { force: true } to drop and recreate tables
     console.log("Models synced");
 
     app.use(errorHandlingMiddleware);

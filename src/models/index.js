@@ -18,6 +18,8 @@ import { RecentlyViewed } from "./recently.viewed.model.js";
 import { ProductSize } from "./product.size.model.js";
 import { Cart } from "./cart.model.js";
 import { CartItems } from "./cart.items.model.js";
+import { Coupon } from "./coupon.model.js";
+import { CouponUsage } from "./coupon.usages.model.js";
 
 /* [User Relational] */
 // One-to-One: User ↔ UserProfile
@@ -230,6 +232,28 @@ User.hasOne(Cart,{
 });
 Cart.belongsTo(User,{ foreignKey: "user_id", as: "user" });
 
+// Coupon ↔ Order (Many-to-One)
+Coupon.hasMany(Order, {
+  foreignKey: "coupon_id",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+Order.belongsTo(Coupon, { foreignKey: "coupon_id", as: "coupon" });
+
+// Coupon ↔ User (Many-to-Many)
+User.belongsToMany(Coupon,{
+  through: CouponUsage,
+  foreignKey: "user_id",
+  otherKey: "coupon_id",
+  as: "userCoupons",
+});
+Coupon.belongsToMany(User,{
+  through: CouponUsage,
+  foreignKey: "coupon_id",
+  otherKey: "user_id",
+  as: "couponUsers",
+})
+
 
 export {
   User,
@@ -249,5 +273,6 @@ export {
   FakeBankAccount,
   Payment,
   RecentlyViewed,
-  Cart
+  Cart,
+  Coupon
 };

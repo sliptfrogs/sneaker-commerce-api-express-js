@@ -9,11 +9,12 @@ import { ProductImage } from "../models/product.image.model.js";
 import { FakeBankAccount } from "../models/fake.bank.account.model.js";
 import { CartItems } from "../models/cart.items.model.js";
 import { Cart } from "../models/cart.model.js";
+import { Coupon } from "../models/index.js";
 
 export const CreateCheckoutService = async (req) => {
   const t = await sequelize.transaction();
   try {
-    const { items, payment_method } = req.body;
+    const { items, payment_method, coupon_code } = req.body;
     const userId = req.user.id;
 
     if (!payment_method) {
@@ -42,8 +43,6 @@ export const CreateCheckoutService = async (req) => {
       transaction: t,
       lock: t.LOCK.UPDATE,
     });
-    // console.log('cart-items', cartItems[0]);
-
 
     const cartItemProductIds = cartItems.map((ci) => ci.product_id);
     const missingFromCart = productIds.filter(
@@ -72,16 +71,47 @@ export const CreateCheckoutService = async (req) => {
 
     // 4️⃣ Calculate total based on quantities stored in CartItems
     let totalAmount = 0;
+    let subtotal_amount = 0;
     for (const cartItem of cartItems) {
       const product = products.find((p) => p.id === cartItem.product_id);
       const price = parseFloat(product.price);
       const discount = Number(product.discount_percentage) || 0;
       const discountedPrice = price * (1 - discount / 100);
       totalAmount += discountedPrice * cartItem.quantity;
+      subtotal_amount += price * cartItem.quantity;
     }
 
     // Round to 2 decimals
     totalAmount = parseFloat(totalAmount.toFixed(2));
+    subtotal_amount = parseFloat(subtotal_amount.toFixed(2));
+
+
+    let coupon_price_in_fixed = 0;
+    let coupondiscount = null;
+
+    if(coupon_code){
+
+       coupondiscount = await Coupon.findOne({
+        where: { code: coupon_code },
+        transaction: t,
+      });
+
+
+      if (coupondiscount.discount_type === "FIXED") {
+        coupon_price_in_fixed = coupondiscount.discount_value;
+      } else {
+        coupon_price_in_fixed =
+          (coupondiscount.discount_value / 100) * totalAmount;
+      }
+    }
+
+
+    coupon_price_in_fixed = parseFloat(coupon_price_in_fixed).toFixed(2);
+
+    totalAmount = totalAmount - coupon_price_in_fixed;
+
+
+    if (totalAmount < 0) totalAmount = 0;
 
     // 5️⃣ Create Order for this user
     const order = await Order.create(
@@ -89,6 +119,9 @@ export const CreateCheckoutService = async (req) => {
         user_id: userId,
         payment_method,
         total_amount: totalAmount,
+        subtotal_amount: subtotal_amount,
+        discount_amount: subtotal_amount - totalAmount,
+        coupon_id: coupondiscount ? coupondiscount.id : null,
         status: "PENDING",
       },
       { transaction: t },
@@ -175,8 +208,6 @@ export const PayUserOrderService = async (userId, orderId, cardNumber) => {
     if (order.status !== "PENDING")
       throw new ApiError("Order already processed", 409);
 
-
-
     // 2️⃣ Check stock for each product
     for (const item of order.order_items) {
       const product = item.product;
@@ -211,7 +242,6 @@ export const PayUserOrderService = async (userId, orderId, cardNumber) => {
     checkBankCard.balance -= order.total_amount;
     await checkBankCard.save({ transaction: t });
 
-
     // 4️⃣ Create Payment record
     const payment = await Payment.create(
       {
@@ -237,12 +267,16 @@ export const PayUserOrderService = async (userId, orderId, cardNumber) => {
     await t.rollback();
 
     // Surface validation / unique constraint details if present
-    if (err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError") {
-      const details = err.errors?.map((e) => ({
-        message: e.message,
-        path: e.path,
-        value: e.value,
-      })) || [];
+    if (
+      err.name === "SequelizeValidationError" ||
+      err.name === "SequelizeUniqueConstraintError"
+    ) {
+      const details =
+        err.errors?.map((e) => ({
+          message: e.message,
+          path: e.path,
+          value: e.value,
+        })) || [];
       throw new ApiError("Payment validation error", 400, details);
     }
 

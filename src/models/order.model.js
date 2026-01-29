@@ -15,11 +15,25 @@ export const Order = sequelize.define(
       defaultValue: "CREDIT_CARD",
       allowNull: false,
     },
+    subtotal_amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    discount_amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
     total_amount: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       defaultValue: 0,
     },
+    coupon_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    }
   },
   { timestamps: true },
 );
