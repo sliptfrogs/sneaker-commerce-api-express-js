@@ -71,7 +71,7 @@ export const authLoginService = async (userReq) => {
     }
 
 
-    const tokens = generateTokens({ id: user.id, role: user.role, balance: user.bankAccount ? user.bankAccount.balance : 0 });
+    const tokens = generateTokens({ id: user.id,email: user.email, role: user.role });
 
     return {
       id: user.id,

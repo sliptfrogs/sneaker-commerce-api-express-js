@@ -9,8 +9,8 @@ export const generateTokens = (user) => {
   const accessToken = jwt.sign(
     {
       id: user.id,
+      email: user.email,
       role: user.role,
-      balance: user.balance,
     },
     ACCESS_SECRET,
     {
@@ -20,6 +20,8 @@ export const generateTokens = (user) => {
   const refreshToken = jwt.sign(
     {
       id: user.id,
+      email: user.email,
+      role: user.role,
     },
     REFRESH_SECRET,
     {
@@ -28,6 +30,22 @@ export const generateTokens = (user) => {
   );
   return { accessToken, refreshToken };
 };
+export const generateAccessToken = (user)=>{
+  const accessToken = jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    },
+    ACCESS_SECRET,
+    {
+      expiresIn: process.env.JWT_ACCESS_EXPIRED_IN,
+    },
+  );
+
+  return { accessToken };
+
+}
 export const verifyAccessToken = (token) => {
   try {
     return jwt.verify(token, ACCESS_SECRET);
@@ -35,3 +53,10 @@ export const verifyAccessToken = (token) => {
     throw new ApiError(error.message, error.statusCode || 500);
   }
 };
+export const verifyRefreshToken = (token)=>{
+  try {
+    return jwt.verify(token, REFRESH_SECRET);
+  } catch (error) {
+    throw new ApiError(error.message, error.statusCode || 500);
+  }
+}
