@@ -1,4 +1,4 @@
-import { Favorite, Product, User } from "../models/index.js";
+import { Favorite, Product, User, UserProfile } from "../models/index.js";
 import { ApiError } from "../utils/ApiError.util.js";
 
 export const addFavoriteService = async (user_id, product_id) => {
@@ -36,6 +36,11 @@ export const getMyFavoritesService = async (user_id) => {
   const userWithFavorites = await User.findByPk(user_id, {
     attributes: ["id", "email", "role"],
     include: [
+      {
+        model: UserProfile,
+        as: 'profile',
+        attributes: ['first_name', 'last_name', 'avatar_url']
+      },
       {
         model: Product,
         as: "favoriteProducts",
