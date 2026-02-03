@@ -52,9 +52,14 @@ export const authLoginService = async (userReq) => {
       attributes: ["id", "email", "role", "password_hash"],
       include: [
         {
+          model: UserProfile,
+          as: "profile",
+          attributes: ["first_name", "last_name"],
+        },
+        {
           model: FakeBankAccount,
           as: "bankAccount",
-          attributes: ["balance"]
+          attributes: ["balance"],
         },
       ],
     });
@@ -70,13 +75,17 @@ export const authLoginService = async (userReq) => {
       throw new ApiError("Invalid email or password", 401);
     }
 
-
-    const tokens = generateTokens({ id: user.id,email: user.email, role: user.role });
+    const tokens = generateTokens({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
 
     return {
       id: user.id,
       email: user.email,
       balance: user.bankAccount ? user.bankAccount.balance : 0,
+      profile: user.profile,
       currency: "USD",
       role: user.role,
       tokens,

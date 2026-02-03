@@ -1,18 +1,16 @@
 import { sendErrorResponse } from "../utils/ApiResponse.util.js";
 
-export const authorizeRoles = (...allowedRoles)=>{
-    return (req,res,next)=>{
-        const user = req.user;
+export const authorizeRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+    const user = req.user;
 
-
-
-        if(!user){
-            sendErrorResponse(res, 'Unauthorized', 401)
-        }
-        if(!allowedRoles.includes(user.role)){
-            sendErrorResponse(res, 'Forbidden: insufficient role');
-        }
-
-        next();
+    if (!user) {
+      sendErrorResponse(res, "Unauthorized", 401);
     }
-}
+    if (!allowedRoles.includes(user.role)) {
+      sendErrorResponse(res, "Forbidden: insufficient role");
+    }
+
+    next();
+  };
+};

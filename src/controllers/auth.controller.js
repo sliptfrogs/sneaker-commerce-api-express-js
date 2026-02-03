@@ -1,3 +1,5 @@
+import { User } from "../models/user.model.js";
+import { UserProfile } from "../models/user.profile.model.js";
 import {
   authLoginService,
   authRegisterService,
@@ -48,7 +50,16 @@ export const refreshTokenController = async (req, res) => {
       email: decoded.email,
       role: decoded.role,
     });
-    sendSuccessResponse(res, tokens, "Token refreshed", []);
+    const user = await User.findByPk(decoded.id,{
+      include: [
+        {
+          model: UserProfile,
+          as: 'profile',
+          attributes: ['first_name', 'last_name']
+        }
+      ]
+    })
+    sendSuccessResponse(res, {user, tokens}, "Token refreshed", []);
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode || 500, error);
   }

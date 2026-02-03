@@ -168,6 +168,7 @@ export const GetUserOrderService = async (id) => {
           as: "payment",
         },
       ],
+      order: [['createdAt', 'DESC']]
     });
     return checkouts;
   } catch (error) {

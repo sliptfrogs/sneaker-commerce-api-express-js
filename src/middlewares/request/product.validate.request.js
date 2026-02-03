@@ -125,7 +125,7 @@ export const productValidation = [
     if (
       !req.files ||
       !req.files.product_images ||
-      !req.files.product_images.length > 0
+      !req.files?.product_images?.length > 0
     ) {
       throw new Error("Product images is required atleast one image");
     }
@@ -242,7 +242,7 @@ export const productUpdateValidation = [
     if (
       !req.files ||
       !req.files.product_images ||
-      !req.files.product_images.length > 0
+      !req.files?.product_images?.length > 0
     ) {
       throw new Error("Product images is required atleast one image");
     }

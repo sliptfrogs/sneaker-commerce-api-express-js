@@ -20,80 +20,60 @@ import { OrderItems } from "../models/order.items.model.js";
 export const createProductService = async (req) => {
   const reqBody = req.body;
 
-
-
-
-
   const t = await sequelize.transaction();
   try {
-    // Find Category with id before create product
-    console.log('request', reqBody);
-    await getCategoryService(reqBody.category_id);
-    await findBrandById(reqBody.brand_id);
-    await findUserById(req.user.id);
+    const thumbnailFile = req.files.thumbnail?.[0];
+    const barcodeFile = req.files.barcode_url?.[0];
+    const qrCodeFile = req.files.qr_code_url?.[0];
 
-
-    // Files
-    const thumbnailFile = req.files.thumbnail[0];
-    const barcodeFile = req.files.barcode_url[0];
-    const qrCodeFile = req.files.qr_code_url[0];
-
-    // Build URL (to save in DB)
-    const thumbnailUrl = `/uploads/${thumbnailFile.filename}`;
-    const barcodeUrl = `/uploads/${barcodeFile.filename}`;
-    const qrCodeUrl = `/uploads/${qrCodeFile.filename}`;
-
+    if (!thumbnailFile || !barcodeFile || !qrCodeFile) {
+      throw new ApiError(
+        "Thumbnail, barcode, and QR code files are required",
+        400,
+      );
+    }
 
     const product = await Product.create(
       {
-        title: reqBody?.title,
-        description: reqBody?.description,
-        category_id: reqBody?.category_id,
-        brand_id: reqBody?.brand_id,
-        created_by: req?.user.id,
-        price: reqBody?.price,
-        discount_percentage: reqBody?.discount_percentage ?? 0,
-        stock: reqBody?.stock,
-        sku: reqBody?.sku,
-        weight: reqBody?.weight,
-        width: reqBody?.width,
-        height: reqBody?.height,
-        warranty_infor: reqBody?.warranty_infor,
-        shipping_infor: reqBody?.shipping_infor,
-        availability_status: reqBody?.availability_status,
-        return_policy: reqBody?.return_policy,
-        minimum_order_quantity: reqBody?.minimum_order_quantity,
-        barcode_url: barcodeUrl,
-        qr_code_url: qrCodeUrl,
-        thumbnail_url: thumbnailUrl,
+        title: reqBody.title,
+        description: reqBody.description,
+        category_id: reqBody.category_id,
+        brand_id: reqBody.brand_id,
+        created_by: req.user.id,
+        price: reqBody.price,
+        discount_percentage: reqBody.discount_percentage ?? 0,
+        stock: reqBody.stock,
+        sku: reqBody.sku,
+        weight: reqBody.weight,
+        width: reqBody.width,
+        height: reqBody.height,
+        warranty_infor: reqBody.warranty_infor,
+        shipping_infor: reqBody.shipping_infor,
+        availability_status: reqBody.availability_status,
+        return_policy: reqBody.return_policy,
+        minimum_order_quantity: reqBody.minimum_order_quantity,
+        barcode_url: `/uploads/${barcodeFile.filename}`,
+        qr_code_url: `/uploads/${qrCodeFile.filename}`,
+        thumbnail_url: `/uploads/${thumbnailFile.filename}`,
       },
-      {
-        transaction: t,
-      },
+      { transaction: t },
     );
 
-    const imagesData = req.files.product_images.map((file) => ({
+    const imagesData = req.files.product_images?.map((file) => ({
       image_url: `/uploads/${file.filename}`,
       product_id: product.id,
     }));
 
-    await ProductImage.bulkCreate(imagesData, { transaction: t });
+    if (imagesData?.length)
+      await ProductImage.bulkCreate(imagesData, { transaction: t });
+    if (reqBody.sizes?.length)
+      await ProductSize.bulkCreate(
+        reqBody.sizes.map((size) => ({ size, product_id: product.id })),
+        { transaction: t },
+      );
 
-
-
-    // console.log('request', sizes);
-
-    await ProductSize.bulkCreate(
-      reqBody.sizes.map((size) => ({
-        size,
-        product_id: product.id,
-      })),
-      { transaction: t },
-    );
-
-    t.commit();
-
-    return;
+    await t.commit();
+    return product;
   } catch (error) {
     await t.rollback();
     if (error instanceof UniqueConstraintError) {
@@ -102,14 +82,15 @@ export const createProductService = async (req) => {
         value: e.value,
       }));
       throw new ApiError(
-        "Some product field must be unique or can't be dupplicated",
-        error.statusCode,
+        "Some product field must be unique or can't be duplicated",
+        error.statusCode || 400,
         duplicatedFields,
       );
     }
-    throw new ApiError(error.message, error.statusCode);
+    throw new ApiError(error.message, error.statusCode || 400);
   }
 };
+
 export const getProductsService = async () => {
   try {
     const products = await Product.findAll({
@@ -122,8 +103,8 @@ export const getProductsService = async () => {
         {
           model: ProductSize,
           as: "sizes",
-          attributes: ['size']
-        }
+          attributes: ["size"],
+        },
       ],
     });
 

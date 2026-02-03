@@ -13,11 +13,10 @@ export const protect = (req, res, next) => {
     return res.status(401).json({ message: "Invalid or Exired token" });
   }
 
-  
+
   console.log("user-decode-tokens", decoded);
 
   req.user = decoded;
-
   next();
 };
 export const protectRefreshToken = (req, res, next) => {
