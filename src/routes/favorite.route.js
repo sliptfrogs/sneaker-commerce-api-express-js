@@ -17,8 +17,8 @@ favoriteRouter.post("/",
   favoriteValidateRequest,
   addToFavorite);
 
-// DELETE /favorites/:fav_id
-favoriteRouter.delete("/:fav_id", protect, removeFavorite);
+// DELETE /favorites/:id (Product_ID)
+favoriteRouter.delete("/:id", protect, removeFavorite);
 
 // GET /favorites
 favoriteRouter.get("/me",

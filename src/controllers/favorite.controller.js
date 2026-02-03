@@ -4,6 +4,10 @@ import {
   getMyFavoritesService,
   removeFavoriteService,
 } from "../services/favorite.service.js";
+import {
+  sendErrorResponse,
+  sendSuccessResponse,
+} from "../utils/ApiResponse.util.js";
 
 // Add product to favorites
 export const addToFavorite = async (req, res) => {
@@ -25,21 +29,14 @@ export const addToFavorite = async (req, res) => {
 
 export const removeFavorite = async (req, res) => {
   try {
-    const { fav_id } = req.params; // favorite ID from URL
+    const { id } = req.params; // product ID from URL
+    const user_id = req.user.id;
 
-    await removeFavoriteService(fav_id);
+    await removeFavoriteService(id, user_id);
 
-    res.status(200).json({
-      success: true,
-      statusCode: 200,
-      message: "Favorite removed successfully",
-    });
+    sendSuccessResponse(res, [], "Favourite Removed");
   } catch (error) {
-    res.status(404).json({
-      success: false,
-      statusCode: 404,
-      message: error.message,
-    });
+    sendErrorResponse(res, error.message, error.statusCode);
   }
 };
 
@@ -64,4 +61,3 @@ export const getMyFavorites = async (req, res) => {
     });
   }
 };
-

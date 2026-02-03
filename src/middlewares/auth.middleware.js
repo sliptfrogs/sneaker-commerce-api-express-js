@@ -12,7 +12,9 @@ export const protect = (req, res, next) => {
   if (!decoded) {
     return res.status(401).json({ message: "Invalid or Exired token" });
   }
-  // console.log('user-decode-tokens', decoded);
+
+  
+  console.log("user-decode-tokens", decoded);
 
   req.user = decoded;
 
@@ -26,7 +28,7 @@ export const protectRefreshToken = (req, res, next) => {
   }
   const token = authHeader.split(" ")[1];
   const decoded = verifyRefreshToken(token);
-  
+
   if (!decoded) {
     return res.status(401).json({ message: "Invalid or Exired refresh token" });
   }

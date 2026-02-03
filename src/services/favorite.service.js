@@ -1,4 +1,5 @@
-import { Favorite , Product, User } from "../models/index.js";
+import { Favorite, Product, User } from "../models/index.js";
+import { ApiError } from "../utils/ApiError.util.js";
 
 export const addFavoriteService = async (user_id, product_id) => {
   const [favorite, created] = await Favorite.findOrCreate({
@@ -13,12 +14,20 @@ export const addFavoriteService = async (user_id, product_id) => {
 };
 
 // Remove favorite
-export const removeFavoriteService = async (fav_id) => {
-  const deleted = await Favorite.destroy({
-    where: { id: fav_id }, 
+export const removeFavoriteService = async (pro_id, user_id) => {
+  const findDeleteFavourite = await Favorite.findOne({
+    where: {
+      product_id: pro_id,
+      user_id: user_id,
+    },
   });
 
-  if (!deleted) throw new Error("Favorite not found");
+  if(!findDeleteFavourite){
+    throw new ApiError('Favourite not found', 404)
+  }
+
+  await findDeleteFavourite.destroy();
+
   return true;
 };
 
@@ -30,10 +39,9 @@ export const getMyFavoritesService = async (user_id) => {
       {
         model: Product,
         as: "favoriteProducts",
-        attributes: ["id", "title"],
+        // attributes: ["id", "title"],
         through: { attributes: ["created_at"] },
       },
-   
     ],
   });
 
