@@ -20,8 +20,8 @@ export const addItemToCart = async(req,res)=>{
 }
 export const removeItemFromCartById= async(req,res)=>{
     try {
-        await ClearCartByIdService(req.params.cartId);
-        sendSuccessResponse(res, {}, `Cart ${req.params.cartId} cleared successfully`);
+        await ClearCartByIdService(req.params.id, req.user.id);
+        sendSuccessResponse(res, {}, `Cart ${req.params.id} removed`);
 
     } catch (error) {
         sendErrorResponse(res, error.message, error.statusCode || 500);

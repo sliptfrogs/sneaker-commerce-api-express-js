@@ -8,6 +8,6 @@ const cartRouter = Router();
 
 cartRouter.get("/",protect, getCartItems);
 cartRouter.post('/add',protect,CartValidationRequest,handleValidationError, addItemToCart);
-cartRouter.delete('/remove/:cartId',protect, removeItemFromCartById);
+cartRouter.delete('/remove/:id',protect, removeItemFromCartById);
 cartRouter.delete('/clear',protect, removeAllItemsFromCartController);
 export default cartRouter;
