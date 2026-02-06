@@ -115,7 +115,17 @@ export const getProductsService = async () => {
         },
         {
           model: User,
-          as: 'create_by_admin'
+          as: 'create_by_admin',
+          attributes: ['email'],
+          include: [
+            {
+              model: UserProfile,
+              as: 'profile',
+              attributes: {
+                exclude: ['user_id']
+              }
+            }
+          ]
         },
       ],
       attributes: {
