@@ -124,3 +124,40 @@ export const ClearAllCartsByUserIdService = async (userId) => {
     throw new ApiError(error.message, error.statusCode || 500);
   }
 };
+export const updateQuantityCartByIdService=async(productId,userId, quantity)=>{
+  try {
+    const findUserCart = await Cart.findOne({
+      where: {
+        user_id: userId
+      }
+    });
+    if(!findUserCart){
+      throw new ApiError("User cart is empty", 404)
+    }
+    const findCartItems = await CartItems.findOne({
+      where:{
+        cart_id: findUserCart.id,
+        product_id: productId
+      }
+    });
+    if(!findCartItems){
+      throw new ApiError('Cart not found')
+    }
+
+    const checkValidQuantity = findCartItems.quantity + quantity;
+    if(checkValidQuantity<0){
+      throw new ApiError("Cart quantity must be negative or below 0")
+    }else if(checkValidQuantity == 0){
+      await findCartItems.destroy();
+      return;
+    }
+
+    await findCartItems.update({
+      quantity: checkValidQuantity
+    });
+    return;
+
+  } catch (error) {
+    throw new ApiError(error.message, error.statusCode)
+  }
+}
