@@ -148,7 +148,7 @@ Product.belongsToMany(User, {
 
 // Product ↔ User (created_by, One-to-Many)
 User.hasMany(Product, { foreignKey: "created_by" });
-Product.belongsTo(User, { foreignKey: "created_by" });
+Product.belongsTo(User, { foreignKey: "created_by", as: 'create_by_admin' });
 
 // Order ↔ Product (Many-to-Many via OrderItems)
 Order.belongsToMany(Product, {

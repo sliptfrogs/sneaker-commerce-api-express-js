@@ -105,7 +105,22 @@ export const getProductsService = async () => {
           as: "sizes",
           attributes: ["size"],
         },
+        {
+          model: Category,
+          as: "category",
+        },
+        {
+          model: Brand,
+          as: "brand",
+        },
+        {
+          model: User,
+          as: 'create_by_admin'
+        },
       ],
+      attributes: {
+        exclude: ["category_id", "brand_id", "created_by"],
+      },
     });
 
     return products;
