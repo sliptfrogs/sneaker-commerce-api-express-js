@@ -30,7 +30,7 @@ brandRouter.post(
 );
 
 // UPDATE
-brandRouter.put(
+                brandRouter.put(
   '/:id',
   protect,
   authorizeRoles('ADMIN'),
