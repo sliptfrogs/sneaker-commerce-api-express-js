@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "test": "jest"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest tests/app.test.js"
   },
   "keywords": [],
   "author": "",

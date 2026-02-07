@@ -1,7 +1,6 @@
 export default {
-  testEnvironment: 'node',
-  transform: {},
-  extensionsToTreatAsEsm: ['.js'],
-  moduleFileExtensions: ['js', 'json', 'node'],
+  testEnvironment: "node",
+  clearMocks: true,
   verbose: true,
+  transform: {},
 };
