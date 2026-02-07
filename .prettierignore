@@ -1,20 +1,5 @@
-# Node modules
 node_modules/
-
-# Build or dist folders
 dist/
 build/
-
-# Environment files
 .env
-.env.local
-
-# Git files
-.git/
-
-# Logs
 *.log
-
-# Other config files
-package-lock.json
-yarn.lock

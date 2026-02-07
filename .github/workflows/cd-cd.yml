@@ -1,4 +1,4 @@
-name: Prettier Format
+name: Code Quality
 
 on:
   push:
@@ -7,11 +7,10 @@ on:
     branches: [main]
 
 jobs:
-  format:
+  lint-and-format:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Setup Node.js
@@ -22,15 +21,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Prettier to format code
+      - name: Run Prettier
         run: npm run format
 
-      - name: Commit & push Prettier changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "chore: format code with Prettier" || echo "No changes to commit"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.SNEAKER_GITHUB_ACTION_TOKEN }}
+      - name: Run ESLint
+        run: npm run lint

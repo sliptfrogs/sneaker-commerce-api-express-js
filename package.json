@@ -5,17 +5,18 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
-    "dev": "nodemon app.js",
-    "generate:jwt-secrets": "node -e \"console.log('ACCESS: ' + require('crypto').randomBytes(64).toString('hex')); console.log('REFRESH: ' + require('crypto').randomBytes(64).toString('hex'))\"",
-    "test": "jest",
-    "format": "prettier --write \"**/*.js\""
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write \"**/*.js\"",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "eslint": "^10.0.0",
+    "eslint": "^8.39.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "nodemon": "^3.1.11",
