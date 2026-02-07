@@ -68,6 +68,24 @@ export const productValidation = [
     .bail()
     .custom((arr) => arr.every((item) => !isNaN(parseFloat(item))))
     .withMessage('Each size must be a float/decimal'),
+  body('colors')
+    .optional()
+    .customSanitizer((value) => {
+      // Convert JSON string to array
+      if (typeof value === 'string') {
+        try {
+          return JSON.parse(value);
+        } catch {
+          throw new Error('Invalid array format');
+        }
+      }
+      return value; // already an array
+    })
+    .isArray()
+    .withMessage('Colors must be an array')
+    .bail()
+    .custom((arr) => arr.every((item) => typeof item === 'string'))
+    .withMessage('Each color must be a string'),
   body('height')
     .optional()
     .toInt()

@@ -14,7 +14,7 @@ import {
 } from '../middlewares/request/product.validate.request.js';
 import { handleValidationError } from '../middlewares/handleValidationError.middleware.js';
 import { protect } from '../middlewares/auth.middleware.js';
-import { uploadImage } from '../middlewares/upload.middleware.js';
+import { uploadProductImages } from '../middlewares/upload.middleware.js';
 import { authorizeRoles } from '../middlewares/role.middleware.js';
 
 const productRoute = Router();
@@ -23,12 +23,7 @@ productRoute.post(
   '/',
   protect,
   authorizeRoles('ADMIN'),
-  uploadImage.fields([
-    { name: 'thumbnail', maxCount: 1 },
-    { name: 'barcode_url', maxCount: 1 },
-    { name: 'qr_code_url', maxCount: 1 },
-    { name: 'product_images', maxCount: 5 },
-  ]),
+  ...uploadProductImages,
   productValidation,
   handleValidationError,
   createProductController,
@@ -45,12 +40,7 @@ productRoute.patch(
   '/:id',
   protect,
   authorizeRoles('ADMIN'),
-  uploadImage.fields([
-    { name: 'thumbnail', maxCount: 1 },
-    { name: 'barcode_url', maxCount: 1 },
-    { name: 'qr_code_url', maxCount: 1 },
-    { name: 'product_images', maxCount: 5 },
-  ]),
+  ...uploadProductImages,
   productUpdateValidation,
   handleValidationError,
   updateProductController,

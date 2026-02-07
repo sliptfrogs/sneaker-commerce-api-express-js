@@ -10,6 +10,7 @@ import {
   UserProfile,
   Order,
   ProductSize,
+  ProductColor,
 } from '../models/index.js';
 import { ApiError } from '../utils/ApiError.util.js';
 import { findBrandById } from './brand.service.js';
@@ -19,14 +20,15 @@ import { OrderItems } from '../models/order.items.model.js';
 
 export const createProductService = async (req) => {
   const reqBody = req.body;
+  const urls = req.cloudinaryUrls || {};
 
   const t = await sequelize.transaction();
   try {
-    const thumbnailFile = req.files.thumbnail?.[0];
-    const barcodeFile = req.files.barcode_url?.[0];
-    const qrCodeFile = req.files.qr_code_url?.[0];
+    const thumbnailUrl = urls.thumbnail?.[0];
+    const barcodeUrl = urls.barcode_url?.[0];
+    const qrCodeUrl = urls.qr_code_url?.[0];
 
-    if (!thumbnailFile || !barcodeFile || !qrCodeFile) {
+    if (!thumbnailUrl || !barcodeUrl || !qrCodeUrl) {
       throw new ApiError(
         'Thumbnail, barcode, and QR code files are required',
         400,
@@ -52,15 +54,15 @@ export const createProductService = async (req) => {
         availability_status: reqBody.availability_status,
         return_policy: reqBody.return_policy,
         minimum_order_quantity: reqBody.minimum_order_quantity,
-        barcode_url: `/uploads/${barcodeFile.filename}`,
-        qr_code_url: `/uploads/${qrCodeFile.filename}`,
-        thumbnail_url: `/uploads/${thumbnailFile.filename}`,
+        barcode_url: barcodeUrl,
+        qr_code_url: qrCodeUrl,
+        thumbnail_url: thumbnailUrl,
       },
       { transaction: t },
     );
 
-    const imagesData = req.files.product_images?.map((file) => ({
-      image_url: `/uploads/${file.filename}`,
+    const imagesData = urls.product_images?.map((imageUrl) => ({
+      image_url: imageUrl,
       product_id: product.id,
     }));
 
@@ -70,6 +72,16 @@ export const createProductService = async (req) => {
       await ProductSize.bulkCreate(
         reqBody.sizes.map((size) => ({ size, product_id: product.id })),
         { transaction: t },
+      );
+    if (reqBody.colors?.length)
+      await ProductColor.bulkCreate(
+        reqBody.colors.map((color) => ({
+          color: color,
+          product_id: product.id,
+        })),
+        {
+          transaction: t,
+        },
       );
 
     await t.commit();
@@ -104,6 +116,11 @@ export const getProductsService = async () => {
           model: ProductSize,
           as: 'sizes',
           attributes: ['size'],
+        },
+        {
+          model: ProductColor,
+          as: 'colors',
+          attributes: ['color'],
         },
         {
           model: Category,
@@ -168,6 +185,16 @@ export const getProductByIdService = async (id) => {
           as: 'brand',
         },
         {
+          model: ProductSize,
+          attributes: ['size'],
+          as: 'sizes',
+        },
+        {
+          model: ProductColor,
+          attributes: ['color'],
+          as: 'colors',
+        },
+        {
           model: Reviews,
           attributes: ['rating', 'comment'],
           include: [
@@ -216,10 +243,9 @@ export const getProductByIdService = async (id) => {
 
 export const updateProductService = async (productId, req) => {
   const reqBody = req.body;
+  const urls = req.cloudinaryUrls || {};
   const t = await sequelize.transaction();
   try {
-    console.log('request body', reqBody);
-
     const findExist = await Product.findByPk(productId);
     if (!findExist) {
       throw new ApiError('Product update not found', 404);
@@ -227,15 +253,10 @@ export const updateProductService = async (productId, req) => {
     await getCategoryService(reqBody.category_id);
     await findBrandById(reqBody.brand_id);
 
-    // Files
-    const thumbnailFile = req.files.thumbnail[0];
-    const barcodeFile = req.files.barcode_url[0];
-    const qrCodeFile = req.files.qr_code_url[0];
-
-    // Build URL (to save in DB)
-    const thumbnailUrl = `/uploads/${thumbnailFile.filename}`;
-    const barcodeUrl = `/uploads/${barcodeFile.filename}`;
-    const qrCodeUrl = `/uploads/${qrCodeFile.filename}`;
+    // Get Cloudinary URLs (use existing if not uploaded)
+    const thumbnailUrl = urls.thumbnail?.[0] || findExist.thumbnail_url;
+    const barcodeUrl = urls.barcode_url?.[0] || findExist.barcode_url;
+    const qrCodeUrl = urls.qr_code_url?.[0] || findExist.qr_code_url;
 
     await findExist.update(
       {
@@ -263,12 +284,15 @@ export const updateProductService = async (productId, req) => {
         transaction: t,
       },
     );
-    const imagesData = req.files.product_images.map((file) => ({
-      image_url: `/uploads/${file.filename}`,
-      product_id: findExist.id,
-    }));
 
-    await ProductImage.bulkCreate(imagesData, { transaction: t });
+    // Only add new images if provided
+    if (urls.product_images?.length) {
+      const imagesData = urls.product_images.map((imageUrl) => ({
+        image_url: imageUrl,
+        product_id: findExist.id,
+      }));
+      await ProductImage.bulkCreate(imagesData, { transaction: t });
+    }
 
     await t.commit();
     return findExist;

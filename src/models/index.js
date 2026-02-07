@@ -20,6 +20,7 @@ import { Cart } from './cart.model.js';
 import { CartItems } from './cart.items.model.js';
 import { Coupon } from './coupon.model.js';
 import { CouponUsage } from './coupon.usages.model.js';
+import { ProductColor } from './product.color.model.js';
 
 /* [User Relational] */
 // One-to-One: User ↔ UserProfile
@@ -104,6 +105,18 @@ Product.hasMany(ProductSize, {
   onUpdate: 'CASCADE',
 });
 ProductSize.belongsTo(Product, {
+  foreignKey: 'product_id',
+  as: 'product',
+});
+
+// Product ↔ ProductColor (One-to-Many)
+Product.hasMany(ProductColor, {
+  foreignKey: 'product_id',
+  as: 'colors',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+ProductColor.belongsTo(Product, {
   foreignKey: 'product_id',
   as: 'product',
 });
@@ -274,4 +287,5 @@ export {
   RecentlyViewed,
   Cart,
   Coupon,
+  ProductColor
 };
