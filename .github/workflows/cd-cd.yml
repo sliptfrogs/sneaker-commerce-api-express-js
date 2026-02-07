@@ -25,12 +25,12 @@ jobs:
       - name: Run Prettier to format code
         run: npm run format
 
-      - name: Commit formatted code
+      - name: Commit & push Prettier changes
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git add .
-          git commit -m "chore: format code with Prettier" || echo "No changes to commit"
-          git push
+            git config --global user.name "github-actions"
+            git config --global user.email "actions@github.com"
+            git add .
+            git commit -m "chore: format code with Prettier" || echo "No changes to commit"
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.ref_name }}
         env:
-          GITHUB_TOKEN: ${{ secrets.SNEAKER_GITHUB_ACTION_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
