@@ -9,7 +9,7 @@ import { likeMiddlewareValidate } from '../middlewares/request/validate.like.req
 import { handleValidationError } from '../middlewares/handleValidationError.middleware.js';
 const likeRoute = Router();
 
-likeRoute.post(
+          likeRoute.post(
   '/',
   likeMiddlewareValidate,
   handleValidationError,

@@ -33,4 +33,4 @@ jobs:
           git commit -m "chore: format code with Prettier" || echo "No changes to commit"
           git push
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SNEAKER_GITHUB_ACTION_TOKEN }}
