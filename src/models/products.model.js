@@ -1,11 +1,11 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/SequelizeORM.js";
-import { User } from "./user.model.js";
-import { Category } from "./category.model.js";
-import { Brand } from "./brand.model.js";
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/SequelizeORM.js';
+import { User } from './user.model.js';
+import { Category } from './category.model.js';
+import { Brand } from './brand.model.js';
 
 export const Product = sequelize.define(
-  "product_tb",
+  'product_tb',
   {
     title: {
       type: DataTypes.STRING,
@@ -20,7 +20,7 @@ export const Product = sequelize.define(
       allowNull: false,
       references: {
         model: Category,
-        key: "id",
+        key: 'id',
       },
     },
     brand_id: {
@@ -28,7 +28,7 @@ export const Product = sequelize.define(
       allowNull: false,
       references: {
         model: Brand,
-        key: "id",
+        key: 'id',
       },
     },
     created_by: {
@@ -36,7 +36,7 @@ export const Product = sequelize.define(
       allowNull: false,
       references: {
         model: User,
-        key: "id",
+        key: 'id',
       },
     },
     price: {
@@ -55,7 +55,6 @@ export const Product = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-
     },
     weight: {
       type: DataTypes.DECIMAL,
@@ -78,8 +77,8 @@ export const Product = sequelize.define(
       allowNull: true,
     },
     availability_status: {
-      type: DataTypes.ENUM("IN_STOCK", "OUT_OF_STOCK", "PREORDER"),
-      defaultValue: "IN_STOCK",
+      type: DataTypes.ENUM('IN_STOCK', 'OUT_OF_STOCK', 'PREORDER'),
+      defaultValue: 'IN_STOCK',
     },
     return_policy: {
       type: DataTypes.TEXT,
@@ -112,8 +111,8 @@ export const Product = sequelize.define(
     indexes: [
       {
         unique: true,
-        fields: ['sku']
-      }
-    ]
+        fields: ['sku'],
+      },
+    ],
   },
 );

@@ -1,13 +1,13 @@
-import { createLikeService } from "../services/like.service.js";
+import { createLikeService } from '../services/like.service.js';
 import {
   sendErrorResponse,
   sendSuccessResponse,
-} from "../utils/ApiResponse.util.js";
+} from '../utils/ApiResponse.util.js';
 
 export const createLikeController = async (req, res) => {
   try {
     const like = await createLikeService(req);
-    sendSuccessResponse(res, like, "CREATED");
+    sendSuccessResponse(res, like, 'CREATED');
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode || 500);
   }

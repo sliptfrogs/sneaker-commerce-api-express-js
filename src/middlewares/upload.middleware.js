@@ -1,9 +1,9 @@
-import multer from "multer";
-import path from "path";
+import multer from 'multer';
+import path from 'path';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/uploads");
+    cb(null, 'public/uploads');
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -12,8 +12,8 @@ const storage = multer.diskStorage({
   },
 });
 export const uploadImage = multer({
-    storage,
-    limits:{
-        fileSize: 5*1024*1024,
-    },
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
 });

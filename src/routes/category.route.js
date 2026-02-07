@@ -1,48 +1,48 @@
-import { Router } from "express";
+import { Router } from 'express';
 import {
   createCategoryController,
   destroyCategoryController,
   getCategoriesController,
   getCategoryController,
   updateCategoryController,
-} from "../controllers/category.controller.js";
-import { cateogryValidateRequest } from "../middlewares/request/category.validate.request.js";
-import { handleValidationError } from "../middlewares/handleValidationError.middleware.js";
-import { protect } from "../middlewares/auth.middleware.js";
-import { authorizeRoles } from "../middlewares/role.middleware.js";
+} from '../controllers/category.controller.js';
+import { cateogryValidateRequest } from '../middlewares/request/category.validate.request.js';
+import { handleValidationError } from '../middlewares/handleValidationError.middleware.js';
+import { protect } from '../middlewares/auth.middleware.js';
+import { authorizeRoles } from '../middlewares/role.middleware.js';
 
 const categoryRouter = Router();
 
 categoryRouter.post(
-  "/",
+  '/',
   protect,
-  authorizeRoles("ADMIN"),
+  authorizeRoles('ADMIN'),
   cateogryValidateRequest,
   handleValidationError,
   createCategoryController,
 );
 categoryRouter.get(
-  "/",
+  '/',
   protect,
-  authorizeRoles("ADMIN"),
+  authorizeRoles('ADMIN'),
   getCategoriesController,
 );
 categoryRouter.get(
-  "/:id",
+  '/:id',
   protect,
-  authorizeRoles("ADMIN"),
+  authorizeRoles('ADMIN'),
   getCategoryController,
 );
 categoryRouter.delete(
-  "/:id",
+  '/:id',
   protect,
-  authorizeRoles("ADMIN"),
+  authorizeRoles('ADMIN'),
   destroyCategoryController,
 );
 categoryRouter.patch(
-  "/:id",
+  '/:id',
   protect,
-  authorizeRoles("ADMIN"),
+  authorizeRoles('ADMIN'),
   cateogryValidateRequest,
   handleValidationError,
   updateCategoryController,

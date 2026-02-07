@@ -1,9 +1,9 @@
-import { where } from "sequelize";
-import { Category } from "../models/index.js";
-import { ApiError } from "../utils/ApiError.util.js";
+import { where } from 'sequelize';
+import { Category } from '../models/index.js';
+import { ApiError } from '../utils/ApiError.util.js';
 
 export const createCategoryService = async (reqBody) => {
-  console.log("name", reqBody);
+  console.log('name', reqBody);
 
   try {
     const [category, created] = await Category.findOrCreate({
@@ -15,7 +15,7 @@ export const createCategoryService = async (reqBody) => {
       },
     });
     if (!created) {
-      throw new ApiError("Category Already Exist", 409);
+      throw new ApiError('Category Already Exist', 409);
     }
 
     return category;
@@ -42,7 +42,7 @@ export const getCategoryService = async (id) => {
     });
 
     if (!category) {
-      throw new ApiError("Category not found", 404);
+      throw new ApiError('Category not found', 404);
     }
     return category;
   } catch (error) {
@@ -54,7 +54,7 @@ export const destroyCategoryService = async (id) => {
     const category = await Category.findByPk(id);
 
     if (!category) {
-      throw new ApiError("Category Not Found", 404);
+      throw new ApiError('Category Not Found', 404);
     }
     await category.destroy();
     return;
@@ -62,16 +62,16 @@ export const destroyCategoryService = async (id) => {
     throw new ApiError(error.message, error.statusCode);
   }
 };
-export const updateCategoryService = async (id,updateData) => {
+export const updateCategoryService = async (id, updateData) => {
   try {
     const category = await Category.findByPk(id);
 
     if (!category) {
-      throw new ApiError("Category Not Found", 404);
+      throw new ApiError('Category Not Found', 404);
     }
-    await category.update(updateData)
+    await category.update(updateData);
     return category;
   } catch (error) {
-    throw new ApiError(error.message, error.statusCode)
+    throw new ApiError(error.message, error.statusCode);
   }
 };

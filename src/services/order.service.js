@@ -1,15 +1,15 @@
-import { sequelize } from "../config/SequelizeORM.js";
-import { Product } from "../models/products.model.js";
-import { Order } from "../models/order.model.js";
-import { OrderItems } from "../models/order.items.model.js";
-import { ApiError } from "../utils/ApiError.util.js";
-import { Payment } from "../models/payment.model.js";
-import { Category } from "../models/category.model.js";
-import { ProductImage } from "../models/product.image.model.js";
-import { FakeBankAccount } from "../models/fake.bank.account.model.js";
-import { CartItems } from "../models/cart.items.model.js";
-import { Cart } from "../models/cart.model.js";
-import { Coupon } from "../models/index.js";
+import { sequelize } from '../config/SequelizeORM.js';
+import { Product } from '../models/products.model.js';
+import { Order } from '../models/order.model.js';
+import { OrderItems } from '../models/order.items.model.js';
+import { ApiError } from '../utils/ApiError.util.js';
+import { Payment } from '../models/payment.model.js';
+import { Category } from '../models/category.model.js';
+import { ProductImage } from '../models/product.image.model.js';
+import { FakeBankAccount } from '../models/fake.bank.account.model.js';
+import { CartItems } from '../models/cart.items.model.js';
+import { Cart } from '../models/cart.model.js';
+import { Coupon } from '../models/index.js';
 
 export const CreateCheckoutService = async (req) => {
   const t = await sequelize.transaction();
@@ -18,21 +18,21 @@ export const CreateCheckoutService = async (req) => {
     const userId = req.user.id;
 
     if (!payment_method) {
-      throw new ApiError("Payment method is required", 400);
+      throw new ApiError('Payment method is required', 400);
     }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
-      throw new ApiError("Items array is required", 400);
+      throw new ApiError('Items array is required', 400);
     }
 
     // 1️⃣ Find the user's active cart
     const cart = await Cart.findOne({
-      where: { user_id: userId, status: "ACTIVE" },
+      where: { user_id: userId, status: 'ACTIVE' },
       transaction: t,
     });
 
     if (!cart) {
-      throw new ApiError("Active cart not found for the user", 404);
+      throw new ApiError('Active cart not found for the user', 404);
     }
 
     // 2️⃣ Restrict checkout to products that are actually in this user's cart
@@ -51,7 +51,7 @@ export const CreateCheckoutService = async (req) => {
 
     if (missingFromCart.length > 0) {
       throw new ApiError(
-        `One or more products are not in your cart: ${missingFromCart.join(", ")}`,
+        `One or more products are not in your cart: ${missingFromCart.join(', ')}`,
         400,
       );
     }
@@ -66,7 +66,7 @@ export const CreateCheckoutService = async (req) => {
     const existingIds = products.map((p) => p.id);
     const missingIds = productIds.filter((id) => !existingIds.includes(id));
     if (missingIds.length > 0) {
-      throw new ApiError(`Product not found: ${missingIds.join(", ")}`, 404);
+      throw new ApiError(`Product not found: ${missingIds.join(', ')}`, 404);
     }
 
     // 4️⃣ Calculate total based on quantities stored in CartItems
@@ -85,19 +85,16 @@ export const CreateCheckoutService = async (req) => {
     totalAmount = parseFloat(totalAmount.toFixed(2));
     subtotal_amount = parseFloat(subtotal_amount.toFixed(2));
 
-
     let coupon_price_in_fixed = 0;
     let coupondiscount = null;
 
-    if(coupon_code){
-
-       coupondiscount = await Coupon.findOne({
+    if (coupon_code) {
+      coupondiscount = await Coupon.findOne({
         where: { code: coupon_code },
         transaction: t,
       });
 
-
-      if (coupondiscount.discount_type === "FIXED") {
+      if (coupondiscount.discount_type === 'FIXED') {
         coupon_price_in_fixed = coupondiscount.discount_value;
       } else {
         coupon_price_in_fixed =
@@ -105,11 +102,9 @@ export const CreateCheckoutService = async (req) => {
       }
     }
 
-
     coupon_price_in_fixed = parseFloat(coupon_price_in_fixed).toFixed(2);
 
     totalAmount = totalAmount - coupon_price_in_fixed;
-
 
     if (totalAmount < 0) totalAmount = 0;
 
@@ -122,7 +117,7 @@ export const CreateCheckoutService = async (req) => {
         subtotal_amount: subtotal_amount,
         discount_amount: subtotal_amount - totalAmount,
         coupon_id: coupondiscount ? coupondiscount.id : null,
-        status: "PENDING",
+        status: 'PENDING',
       },
       { transaction: t },
     );
@@ -155,25 +150,25 @@ export const GetUserOrderService = async (id) => {
       include: [
         {
           model: OrderItems,
-          as: "order_items",
+          as: 'order_items',
           include: [
             {
               model: Product,
-              as: "product",
+              as: 'product',
             },
           ],
         },
         {
           model: Payment,
-          as: "payment",
+          as: 'payment',
         },
       ],
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
     });
     return checkouts;
   } catch (error) {
     throw new ApiError(
-      error.message || "Something went wrong",
+      error.message || 'Something went wrong',
       error.statusCode || 500,
     );
   }
@@ -187,27 +182,27 @@ export const PayUserOrderService = async (userId, orderId, cardNumber) => {
       include: [
         {
           model: OrderItems,
-          as: "order_items", // alias from association
+          as: 'order_items', // alias from association
           include: [
             {
               model: Product,
-              as: "product", // alias from OrderItems → Product
+              as: 'product', // alias from OrderItems → Product
               include: [
-                { model: ProductImage, as: "images" },
-                { model: Category, as: "category" }, // optional
+                { model: ProductImage, as: 'images' },
+                { model: Category, as: 'category' }, // optional
               ],
             },
           ],
         },
-        { model: Payment, as: "payment" }, // alias from Order → Payment
+        { model: Payment, as: 'payment' }, // alias from Order → Payment
       ],
       transaction: t,
       // lock: t.LOCK.UPDATE, // lock order row
     });
 
     if (!order) throw new ApiError(`Order not found`, 404);
-    if (order.status !== "PENDING")
-      throw new ApiError("Order already processed", 409);
+    if (order.status !== 'PENDING')
+      throw new ApiError('Order already processed', 409);
 
     // 2️⃣ Check stock for each product
     for (const item of order.order_items) {
@@ -233,10 +228,10 @@ export const PayUserOrderService = async (userId, orderId, cardNumber) => {
     });
 
     if (!checkBankCard) {
-      throw new ApiError("Bank card not found", 404);
+      throw new ApiError('Bank card not found', 404);
     }
     if (checkBankCard.balance < order.total_amount) {
-      throw new ApiError("Insufficient bank balance", 400);
+      throw new ApiError('Insufficient bank balance', 400);
     }
 
     // Deduct amount from bank balance
@@ -250,14 +245,14 @@ export const PayUserOrderService = async (userId, orderId, cardNumber) => {
         user_id: userId,
         bank_id: checkBankCard.id,
         amount: order.total_amount,
-        status: "COMPLETED", // simulate success/failure
+        status: 'COMPLETED', // simulate success/failure
         method: order.payment_method,
       },
       { transaction: t },
     );
 
     // 5️⃣ Update Order Status
-    order.status = "PAID";
+    order.status = 'PAID';
     await order.save({ transaction: t });
 
     // 6️⃣ Commit Transaction
@@ -269,8 +264,8 @@ export const PayUserOrderService = async (userId, orderId, cardNumber) => {
 
     // Surface validation / unique constraint details if present
     if (
-      err.name === "SequelizeValidationError" ||
-      err.name === "SequelizeUniqueConstraintError"
+      err.name === 'SequelizeValidationError' ||
+      err.name === 'SequelizeUniqueConstraintError'
     ) {
       const details =
         err.errors?.map((e) => ({
@@ -278,7 +273,7 @@ export const PayUserOrderService = async (userId, orderId, cardNumber) => {
           path: e.path,
           value: e.value,
         })) || [];
-      throw new ApiError("Payment validation error", 400, details);
+      throw new ApiError('Payment validation error', 400, details);
     }
 
     throw new ApiError(err.message, err.statusCode || 500, err.errors || []);

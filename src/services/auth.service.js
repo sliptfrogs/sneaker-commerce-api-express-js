@@ -1,9 +1,9 @@
-import { FakeBankAccount, User, UserProfile } from "../models/index.js";
-import { ApiError } from "../utils/ApiError.util.js";
-import { sequelize } from "../config/SequelizeORM.js";
-import { GeneratePassword } from "../utils/PasswordGeneration.util.js";
-import bcrypt from "bcrypt";
-import { generateTokens, verifyAccessToken } from "../utils/jwt.js";
+import { FakeBankAccount, User, UserProfile } from '../models/index.js';
+import { ApiError } from '../utils/ApiError.util.js';
+import { sequelize } from '../config/SequelizeORM.js';
+import { GeneratePassword } from '../utils/PasswordGeneration.util.js';
+import bcrypt from 'bcrypt';
+import { generateTokens, verifyAccessToken } from '../utils/jwt.js';
 
 export const authRegisterService = async (userReq) => {
   const t = await sequelize.transaction();
@@ -22,7 +22,7 @@ export const authRegisterService = async (userReq) => {
     });
 
     if (!created) {
-      throw new ApiError("Email already exist", 409);
+      throw new ApiError('Email already exist', 409);
     }
 
     await UserProfile.create(
@@ -49,22 +49,22 @@ export const authLoginService = async (userReq) => {
   try {
     const user = await User.findOne({
       where: { email: userReq.email },
-      attributes: ["id", "email", "role", "password_hash"],
+      attributes: ['id', 'email', 'role', 'password_hash'],
       include: [
         {
           model: UserProfile,
-          as: "profile",
-          attributes: ["first_name", "last_name"],
+          as: 'profile',
+          attributes: ['first_name', 'last_name'],
         },
         {
           model: FakeBankAccount,
-          as: "bankAccount",
-          attributes: ["balance"],
+          as: 'bankAccount',
+          attributes: ['balance'],
         },
       ],
     });
 
-    if (!user) throw new ApiError("User not found", 404);
+    if (!user) throw new ApiError('User not found', 404);
 
     const isMatch = await bcrypt.compare(
       userReq.password_hash,
@@ -72,7 +72,7 @@ export const authLoginService = async (userReq) => {
     );
 
     if (!isMatch) {
-      throw new ApiError("Invalid email or password", 401);
+      throw new ApiError('Invalid email or password', 401);
     }
 
     const tokens = generateTokens({
@@ -86,7 +86,7 @@ export const authLoginService = async (userReq) => {
       email: user.email,
       balance: user.bankAccount ? user.bankAccount.balance : 0,
       profile: user.profile,
-      currency: "USD",
+      currency: 'USD',
       role: user.role,
       tokens,
     };

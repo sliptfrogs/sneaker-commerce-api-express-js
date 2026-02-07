@@ -1,10 +1,8 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/SequelizeORM.js";
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/SequelizeORM.js';
 
-
-export const Category = sequelize.define("category_tb",{
-    name:{
-        type: DataTypes.STRING
-    }
-})
-
+export const Category = sequelize.define('category_tb', {
+  name: {
+    type: DataTypes.STRING,
+  },
+});

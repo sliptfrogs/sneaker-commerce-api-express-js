@@ -1,5 +1,5 @@
-import { col, fn, literal, UniqueConstraintError } from "sequelize";
-import { sequelize } from "../config/SequelizeORM.js";
+import { col, fn, literal, UniqueConstraintError } from 'sequelize';
+import { sequelize } from '../config/SequelizeORM.js';
 import {
   Brand,
   Category,
@@ -10,12 +10,12 @@ import {
   UserProfile,
   Order,
   ProductSize,
-} from "../models/index.js";
-import { ApiError } from "../utils/ApiError.util.js";
-import { findBrandById } from "./brand.service.js";
-import { getCategoryService } from "./category.service.js";
-import { findUserById } from "./user.service.js";
-import { OrderItems } from "../models/order.items.model.js";
+} from '../models/index.js';
+import { ApiError } from '../utils/ApiError.util.js';
+import { findBrandById } from './brand.service.js';
+import { getCategoryService } from './category.service.js';
+import { findUserById } from './user.service.js';
+import { OrderItems } from '../models/order.items.model.js';
 
 export const createProductService = async (req) => {
   const reqBody = req.body;
@@ -28,7 +28,7 @@ export const createProductService = async (req) => {
 
     if (!thumbnailFile || !barcodeFile || !qrCodeFile) {
       throw new ApiError(
-        "Thumbnail, barcode, and QR code files are required",
+        'Thumbnail, barcode, and QR code files are required',
         400,
       );
     }
@@ -97,21 +97,21 @@ export const getProductsService = async () => {
       include: [
         {
           model: ProductImage,
-          as: "images",
-          attributes: ["image_url"],
+          as: 'images',
+          attributes: ['image_url'],
         },
         {
           model: ProductSize,
-          as: "sizes",
-          attributes: ["size"],
+          as: 'sizes',
+          attributes: ['size'],
         },
         {
           model: Category,
-          as: "category",
+          as: 'category',
         },
         {
           model: Brand,
-          as: "brand",
+          as: 'brand',
         },
         {
           model: User,
@@ -122,21 +122,21 @@ export const getProductsService = async () => {
               model: UserProfile,
               as: 'profile',
               attributes: {
-                exclude: ['user_id']
-              }
-            }
-          ]
+                exclude: ['user_id'],
+              },
+            },
+          ],
         },
       ],
       attributes: {
-        exclude: ["category_id", "brand_id", "created_by"],
+        exclude: ['category_id', 'brand_id', 'created_by'],
       },
     });
 
     return products;
   } catch (error) {
     if (error instanceof UniqueConstraintError) {
-      throw new ApiError("Product already exists", error.statusCode);
+      throw new ApiError('Product already exists', error.statusCode);
     }
     throw new ApiError(error.message, error.statusCode);
   }
@@ -159,26 +159,26 @@ export const getProductByIdService = async (id) => {
       include: [
         {
           model: Category,
-          attributes: ["id", "name"],
-          as: "category",
+          attributes: ['id', 'name'],
+          as: 'category',
         },
         {
           model: Brand,
-          attributes: ["id", "name"],
-          as: "brand",
+          attributes: ['id', 'name'],
+          as: 'brand',
         },
         {
           model: Reviews,
-          attributes: ["rating", "comment"],
+          attributes: ['rating', 'comment'],
           include: [
             {
               model: User,
-              attributes: ["id", "email"],
+              attributes: ['id', 'email'],
               include: [
                 {
                   model: UserProfile,
-                  attributes: ["first_name", "last_name"],
-                  as: "profile",
+                  attributes: ['first_name', 'last_name'],
+                  as: 'profile',
                 },
               ],
             },
@@ -186,27 +186,27 @@ export const getProductByIdService = async (id) => {
         },
       ],
       attributes: [
-        "title",
-        "description",
-        "price",
-        "discount_percentage",
-        "stock",
-        "sku",
-        "weight",
-        "width",
-        "height",
-        "warranty_infor",
-        "shipping_infor",
-        "availability_status",
-        "return_policy",
-        "qr_code_url",
-        "barcode_url",
-        "thumbnail_url",
-        "like_count",
+        'title',
+        'description',
+        'price',
+        'discount_percentage',
+        'stock',
+        'sku',
+        'weight',
+        'width',
+        'height',
+        'warranty_infor',
+        'shipping_infor',
+        'availability_status',
+        'return_policy',
+        'qr_code_url',
+        'barcode_url',
+        'thumbnail_url',
+        'like_count',
       ],
     });
     if (!product) {
-      throw new ApiError("Product not found", 404);
+      throw new ApiError('Product not found', 404);
     }
     return product;
   } catch (error) {
@@ -218,11 +218,11 @@ export const updateProductService = async (productId, req) => {
   const reqBody = req.body;
   const t = await sequelize.transaction();
   try {
-    console.log("request body", reqBody);
+    console.log('request body', reqBody);
 
     const findExist = await Product.findByPk(productId);
     if (!findExist) {
-      throw new ApiError("Product update not found", 404);
+      throw new ApiError('Product update not found', 404);
     }
     await getCategoryService(reqBody.category_id);
     await findBrandById(reqBody.brand_id);
@@ -281,7 +281,7 @@ export const destroyProductService = async (productId) => {
   try {
     const productDelete = await Product.findByPk(productId);
     if (!productDelete) {
-      throw new ApiError("Product to Delete not found", 404);
+      throw new ApiError('Product to Delete not found', 404);
     }
     await productDelete.destroy();
   } catch (error) {
@@ -294,34 +294,34 @@ export const getPopularProductsService = async (limit = 10) => {
     include: [
       {
         model: OrderItems,
-        as: "orderItems", // must match association in models/index.js
+        as: 'orderItems', // must match association in models/index.js
         attributes: [],
         required: true, // only products that have at least one matching order item
         include: [
           {
             model: Order,
-            as: "order", // must match OrderItems → Order association (models/index.js)
+            as: 'order', // must match OrderItems → Order association (models/index.js)
             attributes: [],
             required: true,
-            where: { status: "PAID" }, // only count items from PAID orders
+            where: { status: 'PAID' }, // only count items from PAID orders
           },
         ],
       },
       {
         model: ProductImage,
-        as: "images",
+        as: 'images',
         separate: true, // load images in a separate query to avoid GROUP BY issues
       },
     ],
     attributes: [
-      "id",
-      "title",
-      "price",
-      "thumbnail_url",
-      [fn("COALESCE", fn("SUM", col("orderItems.quantity")), 0), "total_sold"],
+      'id',
+      'title',
+      'price',
+      'thumbnail_url',
+      [fn('COALESCE', fn('SUM', col('orderItems.quantity')), 0), 'total_sold'],
     ],
-    group: [col("product_tb.id")],
-    order: [[literal('"total_sold"'), "DESC"]],
+    group: [col('product_tb.id')],
+    order: [[literal('"total_sold"'), 'DESC']],
     limit,
     subQuery: false,
   });

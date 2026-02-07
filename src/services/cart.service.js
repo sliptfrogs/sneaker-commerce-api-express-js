@@ -1,34 +1,34 @@
-import { sequelize } from "../config/SequelizeORM.js";
-import { CartItems } from "../models/cart.items.model.js";
-import { Cart, Product, User } from "../models/index.js";
-import { ApiError } from "../utils/ApiError.util.js";
+import { sequelize } from '../config/SequelizeORM.js';
+import { CartItems } from '../models/cart.items.model.js';
+import { Cart, Product, User } from '../models/index.js';
+import { ApiError } from '../utils/ApiError.util.js';
 
 export const AddCart = async (userId, reqBody) => {
   const t = await sequelize.transaction();
 
   try {
     if (!userId) {
-      throw new ApiError("User ID is required to add to cart", 400);
+      throw new ApiError('User ID is required to add to cart', 400);
     }
 
     const product = await Product.findByPk(reqBody.product_id, {
       transaction: t,
     });
     if (!product) {
-      throw new ApiError("Product not found", 404);
+      throw new ApiError('Product not found', 404);
     }
 
     const [cart, cartCreated] = await Cart.findOrCreate({
-      where: { user_id: userId, status: "ACTIVE" },
+      where: { user_id: userId, status: 'ACTIVE' },
       defaults: {
         user_id: userId,
-        status: "ACTIVE",
+        status: 'ACTIVE',
       },
       transaction: t,
     });
 
     if (!cart) {
-      throw new ApiError("Failed to find or create cart", 500);
+      throw new ApiError('Failed to find or create cart', 500);
     }
 
     const [cartItems, created] = await CartItems.findOrCreate({
@@ -61,13 +61,13 @@ export const AddCart = async (userId, reqBody) => {
 export const GetCartItems = async (userId) => {
   try {
     const carts = await Cart.findAll({
-      where: { user_id: userId, status: "ACTIVE" },
+      where: { user_id: userId, status: 'ACTIVE' },
       include: [
         {
           model: Product,
-          as: "productsInCart",
+          as: 'productsInCart',
           through: {
-            attributes: ["quantity", "price_at_time"],
+            attributes: ['quantity', 'price_at_time'],
           },
         },
       ],
@@ -87,10 +87,13 @@ export const ClearCartByIdService = async (product_id, user_id) => {
       throw new ApiError(`Cannot find your cart`, 404);
     }
 
-    const product = await Product.findByPk(product_id)
+    const product = await Product.findByPk(product_id);
 
-    if(!product){
-      throw new ApiError(`Product with ID ${product_id} not found in your cart!`, 404)
+    if (!product) {
+      throw new ApiError(
+        `Product with ID ${product_id} not found in your cart!`,
+        404,
+      );
     }
 
     await CartItems.destroy({
@@ -108,11 +111,11 @@ export const ClearCartByIdService = async (product_id, user_id) => {
 export const ClearAllCartsByUserIdService = async (userId) => {
   try {
     const cart = await Cart.findOne({
-      where: { user_id: userId, status: "ACTIVE" },
+      where: { user_id: userId, status: 'ACTIVE' },
     });
 
     if (!cart) {
-      throw new ApiError("Active cart not found for the user", 404);
+      throw new ApiError('Active cart not found for the user', 404);
     }
 
     await CartItems.destroy({
@@ -124,40 +127,43 @@ export const ClearAllCartsByUserIdService = async (userId) => {
     throw new ApiError(error.message, error.statusCode || 500);
   }
 };
-export const updateQuantityCartByIdService=async(productId,userId, quantity)=>{
+export const updateQuantityCartByIdService = async (
+  productId,
+  userId,
+  quantity,
+) => {
   try {
     const findUserCart = await Cart.findOne({
       where: {
-        user_id: userId
-      }
+        user_id: userId,
+      },
     });
-    if(!findUserCart){
-      throw new ApiError("User cart is empty", 404)
+    if (!findUserCart) {
+      throw new ApiError('User cart is empty', 404);
     }
     const findCartItems = await CartItems.findOne({
-      where:{
+      where: {
         cart_id: findUserCart.id,
-        product_id: productId
-      }
+        product_id: productId,
+      },
     });
-    if(!findCartItems){
-      throw new ApiError('Cart not found')
+    if (!findCartItems) {
+      throw new ApiError('Cart not found');
     }
 
     const checkValidQuantity = findCartItems.quantity + quantity;
-    if(checkValidQuantity<0){
-      throw new ApiError("Cart quantity must be negative or below 0")
-    }else if(checkValidQuantity == 0){
+    if (checkValidQuantity < 0) {
+      throw new ApiError('Cart quantity must be negative or below 0');
+    } else if (checkValidQuantity == 0) {
       await findCartItems.destroy();
       return;
     }
 
     await findCartItems.update({
-      quantity: checkValidQuantity
+      quantity: checkValidQuantity,
     });
     return;
-
   } catch (error) {
-    throw new ApiError(error.message, error.statusCode)
+    throw new ApiError(error.message, error.statusCode);
   }
-}
+};

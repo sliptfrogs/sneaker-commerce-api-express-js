@@ -1,6 +1,6 @@
-import jwt from "jsonwebtoken";
-import { config } from "dotenv";
-import { ApiError } from "./ApiError.util.js";
+import jwt from 'jsonwebtoken';
+import { config } from 'dotenv';
+import { ApiError } from './ApiError.util.js';
 config();
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
@@ -30,7 +30,7 @@ export const generateTokens = (user) => {
   );
   return { accessToken, refreshToken };
 };
-export const generateAccessToken = (user)=>{
+export const generateAccessToken = (user) => {
   const accessToken = jwt.sign(
     {
       id: user.id,
@@ -44,8 +44,7 @@ export const generateAccessToken = (user)=>{
   );
 
   return { accessToken };
-
-}
+};
 export const verifyAccessToken = (token) => {
   try {
     return jwt.verify(token, ACCESS_SECRET);
@@ -53,10 +52,10 @@ export const verifyAccessToken = (token) => {
     throw new ApiError(error.message, error.statusCode || 500);
   }
 };
-export const verifyRefreshToken = (token)=>{
+export const verifyRefreshToken = (token) => {
   try {
     return jwt.verify(token, REFRESH_SECRET);
   } catch (error) {
     throw new ApiError(error.message, error.statusCode || 500);
   }
-}
+};

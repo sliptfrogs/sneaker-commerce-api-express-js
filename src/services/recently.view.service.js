@@ -1,13 +1,13 @@
-import { Product, User } from "../models/index.js";
-import { RecentlyViewed } from "../models/index.js";
-import { ApiError } from "../utils/ApiError.util.js";
+import { Product, User } from '../models/index.js';
+import { RecentlyViewed } from '../models/index.js';
+import { ApiError } from '../utils/ApiError.util.js';
 export const createRecentlyViewedService = async (userId, productId) => {
   try {
     const user = await User.findByPk(userId);
-    if (!user) throw new ApiError("User not found", 404);
+    if (!user) throw new ApiError('User not found', 404);
 
     const product = await Product.findByPk(productId);
-    if (!product) throw new ApiError("Product not found", 404);
+    if (!product) throw new ApiError('Product not found', 404);
 
     const [view, created] = await RecentlyViewed.findOrCreate({
       where: {
@@ -34,16 +34,13 @@ export const getRecentlyViewedService = async (userId) => {
   try {
     const products = await Product.findAll({
       where: {
-        "$usersWhoViewed.id$": userId,
+        '$usersWhoViewed.id$': userId,
       },
       include: [
         {
           model: User,
-          as: "usersWhoViewed",
-          attributes: [
-            'id',
-            'email'
-          ]
+          as: 'usersWhoViewed',
+          attributes: ['id', 'email'],
         },
       ],
     });

@@ -1,9 +1,9 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/SequelizeORM.js";
-import { User } from "./user.model.js";
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/SequelizeORM.js';
+import { User } from './user.model.js';
 
 export const Coupon = sequelize.define(
-  "coupon_tb",
+  'coupon_tb',
   {
     code: {
       type: DataTypes.STRING,
@@ -11,8 +11,8 @@ export const Coupon = sequelize.define(
       allowNull: false,
     },
     discount_type: {
-      type: DataTypes.ENUM("FIXED", "PERCENT"),
-      defaultValue: "FIXED",
+      type: DataTypes.ENUM('FIXED', 'PERCENT'),
+      defaultValue: 'FIXED',
     },
     discount_value: {
       type: DataTypes.DECIMAL(10, 2),
@@ -44,7 +44,7 @@ export const Coupon = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
       allowNull: false,
-    }
+    },
   },
   { timestamps: true },
 );

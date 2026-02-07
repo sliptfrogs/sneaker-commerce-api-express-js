@@ -1,13 +1,13 @@
-import { Favorite, Product, User } from "../models/index.js";
+import { Favorite, Product, User } from '../models/index.js';
 import {
   addFavoriteService,
   getMyFavoritesService,
   removeFavoriteService,
-} from "../services/favorite.service.js";
+} from '../services/favorite.service.js';
 import {
   sendErrorResponse,
   sendSuccessResponse,
-} from "../utils/ApiResponse.util.js";
+} from '../utils/ApiResponse.util.js';
 
 // Add product to favorites
 export const addToFavorite = async (req, res) => {
@@ -19,7 +19,7 @@ export const addToFavorite = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Added to favorites",
+      message: 'Added to favorites',
       data: favorite,
     });
   } catch (error) {
@@ -34,7 +34,7 @@ export const removeFavorite = async (req, res) => {
 
     await removeFavoriteService(id, user_id);
 
-    sendSuccessResponse(res, [], "Favourite Removed");
+    sendSuccessResponse(res, [], 'Favourite Removed');
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode);
   }
@@ -50,7 +50,7 @@ export const getMyFavorites = async (req, res) => {
       count: favorites.favoriteProducts.length,
       statusCode: 200,
       success: true,
-      message: "Success",
+      message: 'Success',
       data: favorites,
       meta: [],
     });

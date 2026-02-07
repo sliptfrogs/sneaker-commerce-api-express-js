@@ -1,5 +1,5 @@
-import { body } from "express-validator";
+import { body } from 'express-validator';
 
 export const cateogryValidateRequest = [
-    body('category_name').notEmpty().withMessage('Category Name is missing')
-]
+  body('category_name').notEmpty().withMessage('Category Name is missing'),
+];

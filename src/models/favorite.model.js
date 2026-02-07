@@ -1,8 +1,8 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/SequelizeORM.js";
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/SequelizeORM.js';
 
 export const Favorite = sequelize.define(
-  "favorites_tb",
+  'favorites_tb',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -20,13 +20,13 @@ export const Favorite = sequelize.define(
   },
   {
     timestamps: true,
-    createdAt: "created_at",
-    updatedAt: "updated_at",
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
     indexes: [
       {
         unique: true,
-        fields: ["user_id", "product_id"], // 🚫 prevent duplicates
+        fields: ['user_id', 'product_id'], // 🚫 prevent duplicates
       },
     ],
-  }
+  },
 );

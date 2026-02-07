@@ -1,18 +1,18 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/SequelizeORM.js";
-import { User } from "./user.model.js";
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/SequelizeORM.js';
+import { User } from './user.model.js';
 
 export const Order = sequelize.define(
-  "order_tb",
+  'order_tb',
   {
     status: {
-      type: DataTypes.ENUM("PENDING", "PAID", "FAILED"),
-      defaultValue: "PENDING",
+      type: DataTypes.ENUM('PENDING', 'PAID', 'FAILED'),
+      defaultValue: 'PENDING',
       allowNull: false,
     },
     payment_method: {
-      type: DataTypes.ENUM("CREDIT_CARD", "FAKE_BANK", "CASH"),
-      defaultValue: "CREDIT_CARD",
+      type: DataTypes.ENUM('CREDIT_CARD', 'FAKE_BANK', 'CASH'),
+      defaultValue: 'CREDIT_CARD',
       allowNull: false,
     },
     subtotal_amount: {
@@ -33,7 +33,7 @@ export const Order = sequelize.define(
     coupon_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
-    }
+    },
   },
   { timestamps: true },
 );

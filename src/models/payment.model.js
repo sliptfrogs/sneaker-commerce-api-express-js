@@ -1,25 +1,24 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/SequelizeORM.js";
-import { Order } from "./order.model.js";
-import { FakeBankAccount } from "./fake.bank.account.model.js";
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/SequelizeORM.js';
+import { Order } from './order.model.js';
+import { FakeBankAccount } from './fake.bank.account.model.js';
 
-
-export const Payment = sequelize.define("payment_tb", {
+export const Payment = sequelize.define('payment_tb', {
   method: {
     type: DataTypes.ENUM(
-      "CREDIT_CARD",
-      "FAKE_BANK",
-      "PAYPAL",
-      "STRIPE",
-      "CASH",
-      "OTHER",
+      'CREDIT_CARD',
+      'FAKE_BANK',
+      'PAYPAL',
+      'STRIPE',
+      'CASH',
+      'OTHER',
     ),
     allowNull: false,
-    defaultValue: "CREDIT_CARD",
+    defaultValue: 'CREDIT_CARD',
   },
   status: {
-    type: DataTypes.ENUM("PENDING", "COMPLETED", "FAILED"),
-    defaultValue: "PENDING",
+    type: DataTypes.ENUM('PENDING', 'COMPLETED', 'FAILED'),
+    defaultValue: 'PENDING',
   },
   order_id: {
     type: DataTypes.INTEGER,
@@ -27,7 +26,7 @@ export const Payment = sequelize.define("payment_tb", {
     unique: true,
     references: {
       model: Order,
-      key: "id",
+      key: 'id',
     },
   },
   bank_id: {
@@ -35,7 +34,7 @@ export const Payment = sequelize.define("payment_tb", {
     allowNull: false,
     references: {
       model: FakeBankAccount,
-      key: "id",
+      key: 'id',
     },
   },
   created_at: {
@@ -47,4 +46,3 @@ export const Payment = sequelize.define("payment_tb", {
     defaultValue: DataTypes.NOW,
   },
 });
-

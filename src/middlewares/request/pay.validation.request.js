@@ -1,6 +1,5 @@
-import { body } from "express-validator";
+import { body } from 'express-validator';
 
-
-export const PayValidationRequest=[
-    body('orderId').notEmpty().withMessage('Order ID is required')
-]
+export const PayValidationRequest = [
+  body('orderId').notEmpty().withMessage('Order ID is required'),
+];

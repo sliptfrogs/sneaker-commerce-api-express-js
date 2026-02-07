@@ -6,19 +6,16 @@ import {
   getProductByIdService,
   getProductsService,
   updateProductService,
-} from "../services/product.service.js";
+} from '../services/product.service.js';
 import {
   sendErrorResponse,
   sendSuccessResponse,
-} from "../utils/ApiResponse.util.js";
+} from '../utils/ApiResponse.util.js';
 
 export const createProductController = async (req, res) => {
   try {
-
-
-
     await createProductService(req);
-    sendSuccessResponse(res, [], "Created");
+    sendSuccessResponse(res, [], 'Created');
 
     // return res.json({
     //     body: req.body,
@@ -31,7 +28,7 @@ export const createProductController = async (req, res) => {
 export const getProductsController = async (req, res) => {
   try {
     const products = await getProductsService();
-    sendSuccessResponse(res, products, "Success");
+    sendSuccessResponse(res, products, 'Success');
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode, error);
   }
@@ -55,7 +52,7 @@ export const getProductController = async (req, res) => {
   try {
     const product = await getProductByIdService(req.params.id);
 
-    sendSuccessResponse(res, product, "Success");
+    sendSuccessResponse(res, product, 'Success');
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode);
   }
@@ -63,27 +60,27 @@ export const getProductController = async (req, res) => {
 export const updateProductController = async (req, res) => {
   try {
     await updateProductService(req.params.id, req);
-    sendSuccessResponse(res, [], "Updated");
+    sendSuccessResponse(res, [], 'Updated');
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode);
   }
 };
 export const destroyProductController = async (req, res) => {
-    try {
-        await destroyProductService(req.params.id)
-        sendSuccessResponse(res, [], 'Product Deleted')
-    } catch (error) {
-        sendErrorResponse(res, error.message, error.statusCode)
-    }
+  try {
+    await destroyProductService(req.params.id);
+    sendSuccessResponse(res, [], 'Product Deleted');
+  } catch (error) {
+    sendErrorResponse(res, error.message, error.statusCode);
+  }
 };
 /**
  * Get Popular Products
  */
-export const getPopularProductsController=async(req,res)=>{
-    try {
-      const popularProducts=await getPopularProductsService();
-      sendSuccessResponse(res, popularProducts, "Success");
-    } catch (error) {
-        sendErrorResponse(res, error.message, error.statusCode)
-    }
-}
+export const getPopularProductsController = async (req, res) => {
+  try {
+    const popularProducts = await getPopularProductsService();
+    sendSuccessResponse(res, popularProducts, 'Success');
+  } catch (error) {
+    sendErrorResponse(res, error.message, error.statusCode);
+  }
+};

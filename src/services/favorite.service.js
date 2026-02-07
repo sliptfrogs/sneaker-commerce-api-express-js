@@ -1,5 +1,5 @@
-import { Favorite, Product, User, UserProfile } from "../models/index.js";
-import { ApiError } from "../utils/ApiError.util.js";
+import { Favorite, Product, User, UserProfile } from '../models/index.js';
+import { ApiError } from '../utils/ApiError.util.js';
 
 export const addFavoriteService = async (user_id, product_id) => {
   const [favorite, created] = await Favorite.findOrCreate({
@@ -7,7 +7,7 @@ export const addFavoriteService = async (user_id, product_id) => {
   });
 
   if (!created) {
-    throw new Error("Product already in favorites");
+    throw new Error('Product already in favorites');
   }
 
   return favorite;
@@ -22,8 +22,8 @@ export const removeFavoriteService = async (pro_id, user_id) => {
     },
   });
 
-  if(!findDeleteFavourite){
-    throw new ApiError('Favourite not found', 404)
+  if (!findDeleteFavourite) {
+    throw new ApiError('Favourite not found', 404);
   }
 
   await findDeleteFavourite.destroy();
@@ -34,24 +34,24 @@ export const removeFavoriteService = async (pro_id, user_id) => {
 // Get my favorites
 export const getMyFavoritesService = async (user_id) => {
   const userWithFavorites = await User.findByPk(user_id, {
-    attributes: ["id", "email", "role"],
+    attributes: ['id', 'email', 'role'],
     include: [
       {
         model: UserProfile,
         as: 'profile',
-        attributes: ['first_name', 'last_name', 'avatar_url']
+        attributes: ['first_name', 'last_name', 'avatar_url'],
       },
       {
         model: Product,
-        as: "favoriteProducts",
+        as: 'favoriteProducts',
         // attributes: ["id", "title"],
-        through: { attributes: ["created_at"] },
+        through: { attributes: ['created_at'] },
       },
     ],
   });
 
   if (!userWithFavorites) {
-    throw new ApiError("Favorites not found", 404);
+    throw new ApiError('Favorites not found', 404);
   }
 
   return userWithFavorites;

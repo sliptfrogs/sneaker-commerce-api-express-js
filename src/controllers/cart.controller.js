@@ -4,16 +4,16 @@ import {
   ClearCartByIdService,
   GetCartItems,
   updateQuantityCartByIdService,
-} from "../services/cart.service.js";
+} from '../services/cart.service.js';
 import {
   sendErrorResponse,
   sendSuccessResponse,
-} from "../utils/ApiResponse.util.js";
+} from '../utils/ApiResponse.util.js';
 
 export const getCartItems = async (req, res) => {
   try {
     const cartItems = await GetCartItems(req.user.id);
-    sendSuccessResponse(res, cartItems, "Cart items fetched successfully");
+    sendSuccessResponse(res, cartItems, 'Cart items fetched successfully');
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode || 500);
   }
@@ -21,7 +21,7 @@ export const getCartItems = async (req, res) => {
 export const addItemToCart = async (req, res) => {
   try {
     await AddCart(req.user.id, req.body);
-    sendSuccessResponse(res, {}, "Item added to cart successfully");
+    sendSuccessResponse(res, {}, 'Item added to cart successfully');
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode || 500);
   }
@@ -37,7 +37,7 @@ export const removeItemFromCartById = async (req, res) => {
 export const removeAllItemsFromCartController = async (req, res) => {
   try {
     await ClearAllCartsByUserIdService(req.user.id);
-    sendSuccessResponse(res, {}, "All cart items cleared successfully");
+    sendSuccessResponse(res, {}, 'All cart items cleared successfully');
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode || 500);
   }
@@ -46,7 +46,7 @@ export const updateQuantityItemsById = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
     await updateQuantityCartByIdService(productId, req.user.id, quantity);
-    sendSuccessResponse(res, [], 'Product updated')
+    sendSuccessResponse(res, [], 'Product updated');
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode);
   }

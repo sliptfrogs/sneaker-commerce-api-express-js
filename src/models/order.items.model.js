@@ -1,10 +1,10 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../config/SequelizeORM.js";
-import { Order } from "./order.model.js";
-import { Product } from "./products.model.js";
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/SequelizeORM.js';
+import { Order } from './order.model.js';
+import { Product } from './products.model.js';
 
 export const OrderItems = sequelize.define(
-  "order_items_tb",
+  'order_items_tb',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -16,7 +16,7 @@ export const OrderItems = sequelize.define(
       allowNull: false,
       references: {
         model: Order,
-        key: "id",
+        key: 'id',
       },
     },
     product_id: {
@@ -24,7 +24,7 @@ export const OrderItems = sequelize.define(
       allowNull: false,
       references: {
         model: Product,
-        key: "id",
+        key: 'id',
       },
     },
     price: {
@@ -39,13 +39,13 @@ export const OrderItems = sequelize.define(
   },
   {
     timestamps: true,
-    createdAt: "created_at",
-    updatedAt: "updated_at",
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
     indexes: [
       {
         unique: true,
-        fields: ["order_id", "product_id"],
+        fields: ['order_id', 'product_id'],
       },
     ],
-  }
+  },
 );
