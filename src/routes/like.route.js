@@ -7,7 +7,7 @@ import {
 } from '../controllers/like.controller.js';
 import { likeMiddlewareValidate } from '../middlewares/request/validate.like.request.js';
 import { handleValidationError } from '../middlewares/handleValidationError.middleware.js';
-       const likeRoute = Router();
+const likeRoute = Router();
 
 likeRoute.post(
   '/',
