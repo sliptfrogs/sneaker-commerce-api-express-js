@@ -287,5 +287,5 @@ export {
   RecentlyViewed,
   Cart,
   Coupon,
-  ProductColor
+  ProductColor,
 };

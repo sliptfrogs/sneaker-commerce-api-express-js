@@ -16,7 +16,6 @@ export const createProductController = async (req, res) => {
   try {
     await createProductService(req);
     sendSuccessResponse(res, [], 'Created');
-
   } catch (error) {
     sendErrorResponse(res, error.message, error.statusCode, error);
   }

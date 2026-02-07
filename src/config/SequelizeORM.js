@@ -14,6 +14,6 @@ export const sequelize = new Sequelize(
       process.env.DB_SSL === 'true'
         ? { ssl: { rejectUnauthorized: false } }
         : {},
-    logging: true,
+    logging: false,
   },
 );

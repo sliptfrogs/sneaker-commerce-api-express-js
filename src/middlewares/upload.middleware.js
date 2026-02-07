@@ -43,7 +43,7 @@ export const uploadAllToCloudinary = async (req, res, next) => {
     console.log('=== UPLOAD MIDDLEWARE DEBUG ===');
     console.log('req.files:', req.files);
     console.log('req.file:', req.file);
-    
+
     if (!req.files || Object.keys(req.files).length === 0) {
       console.log('No files found in request');
       return next();
