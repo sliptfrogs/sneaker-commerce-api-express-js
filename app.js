@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import userRouter from './src/routes/user.route.js';
 import { sequelize } from './src/config/SequelizeORM.js';
 import './src/models/index.js'; // register models & associations
@@ -17,6 +18,15 @@ import cartRouter from './src/routes/cart.route.js';
 import couponRouter from './src/routes/coupon.route.js';
 const app = express();
 const ROUTE_URL = '/v1/api';
+
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'PUT'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  }),
+);
 
 app.use(express.json()); // enable when you need JSON body parsing
 

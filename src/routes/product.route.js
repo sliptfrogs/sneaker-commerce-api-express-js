@@ -31,7 +31,7 @@ productRoute.post(
 
 productRoute.get('/', protect, getProductsController);
 /**
- * Get Popular Products
+ * Get Popular Products - Must be before /:id wildcard route
  */
 productRoute.get('/popular', getPopularProductsController);
 // productRoute.get('/category/:id',getProductsViaCategoryController)
