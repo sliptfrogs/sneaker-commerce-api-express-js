@@ -19,6 +19,7 @@ import couponRouter from './src/routes/coupon.route.js';
 const app = express();
 const ROUTE_URL = '/v1/api';
 
+app.set('trust proxy', true);
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || '*',
@@ -27,6 +28,7 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   }),
 );
+app.options('*', cors());
 
 app.use(express.json()); // enable when you need JSON body parsing
 
