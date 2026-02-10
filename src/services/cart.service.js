@@ -66,9 +66,9 @@ export const GetCartItems = async (userId) => {
         {
           model: Product,
           as: 'productsInCart',
-          through: {
-            attributes: ['quantity', 'price_at_time'],
-          },
+          // through: {
+          //   attributes: ['quantity', 'price_at_time'],
+          // },
         },
       ],
     });
