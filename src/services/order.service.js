@@ -9,7 +9,15 @@ import { ProductImage } from '../models/product.image.model.js';
 import { FakeBankAccount } from '../models/fake.bank.account.model.js';
 import { CartItems } from '../models/cart.items.model.js';
 import { Cart } from '../models/cart.model.js';
-import { Coupon } from '../models/index.js';
+import {
+  Brand,
+  Coupon,
+  ProductColor,
+  ProductSize,
+  Reviews,
+  User,
+  UserProfile,
+} from '../models/index.js';
 
 export const CreateCheckoutService = async (req) => {
   const t = await sequelize.transaction();
@@ -155,6 +163,54 @@ export const GetUserOrderService = async (id) => {
             {
               model: Product,
               as: 'product',
+              include: [
+                {
+                  model: Product,
+                  as: 'productsInCart',
+                  through: {
+                    attributes: ['quantity', 'price_at_time'],
+                  },
+                  include: [
+                    {
+                      model: Category,
+                      attributes: ['id', 'name'],
+                      as: 'category',
+                    },
+                    {
+                      model: Brand,
+                      attributes: ['id', 'name'],
+                      as: 'brand',
+                    },
+                    {
+                      model: ProductSize,
+                      attributes: ['size'],
+                      as: 'sizes',
+                    },
+                    {
+                      model: ProductColor,
+                      attributes: ['color'],
+                      as: 'colors',
+                    },
+                    {
+                      model: Reviews,
+                      attributes: ['rating', 'comment'],
+                      include: [
+                        {
+                          model: User,
+                          attributes: ['id', 'email'],
+                          include: [
+                            {
+                              model: UserProfile,
+                              attributes: ['first_name', 'last_name'],
+                              as: 'profile',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
             },
           ],
         },
