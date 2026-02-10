@@ -159,8 +159,11 @@ export const updateQuantityCartByIdService = async (
       return;
     }
 
+    // const findCartItms
+
     await findCartItems.update({
       quantity: checkValidQuantity,
+      price_at_time: findCartItems.price_at_time * checkValidQuantity,
     });
     return;
   } catch (error) {
