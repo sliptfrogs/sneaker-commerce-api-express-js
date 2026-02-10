@@ -35,7 +35,12 @@ productRoute.get('/', protect, getProductsController);
  */
 productRoute.get('/popular', getPopularProductsController);
 // productRoute.get('/category/:id',getProductsViaCategoryController)
-productRoute.delete('/:id', destroyProductController);
+productRoute.delete(
+  '/:id',
+  protect,
+  authorizeRoles('ADMIN'),
+  destroyProductController,
+);
 productRoute.get('/:id', getProductController);
 productRoute.patch(
   '/:id',

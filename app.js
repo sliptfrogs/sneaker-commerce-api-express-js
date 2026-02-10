@@ -32,6 +32,11 @@ app.use(express.json()); // enable when you need JSON body parsing
 
 app.use('/uploads', express.static('public/uploads'));
 
+app.use((req, res, next) => {
+  console.log('METHOD:', req.method, 'PATH:', req.path);
+  next();
+});
+
 app.use(ROUTE_URL + '/user', userRouter);
 app.use(ROUTE_URL + '/auth', authRouter);
 app.use(ROUTE_URL + '/category', categoryRouter);
