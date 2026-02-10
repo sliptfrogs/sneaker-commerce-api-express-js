@@ -81,37 +81,46 @@ export const GetCartItems = async (userId) => {
           },
           include: [
             {
-              model: Category,
-              attributes: ['id', 'name'],
-              as: 'category',
-            },
-            {
-              model: Brand,
-              attributes: ['id', 'name'],
-              as: 'brand',
-            },
-            {
-              model: ProductSize,
-              attributes: ['size'],
-              as: 'sizes',
-            },
-            {
-              model: ProductColor,
-              attributes: ['color'],
-              as: 'colors',
-            },
-            {
-              model: Reviews,
-              attributes: ['rating', 'comment'],
+              model: Product,
+              as: 'productsInCart',
+              through: {
+                attributes: ['quantity', 'price_at_time'],
+              },
               include: [
                 {
-                  model: User,
-                  attributes: ['id', 'email'],
+                  model: Category,
+                  attributes: ['id', 'name'],
+                  as: 'category',
+                },
+                {
+                  model: Brand,
+                  attributes: ['id', 'name'],
+                  as: 'brand',
+                },
+                {
+                  model: ProductSize,
+                  attributes: ['size'],
+                  as: 'sizes',
+                },
+                {
+                  model: ProductColor,
+                  attributes: ['color'],
+                  as: 'colors',
+                },
+                {
+                  model: Reviews,
+                  attributes: ['rating', 'comment'],
                   include: [
                     {
-                      model: UserProfile,
-                      attributes: ['first_name', 'last_name'],
-                      as: 'profile',
+                      model: User,
+                      attributes: ['id', 'email'],
+                      include: [
+                        {
+                          model: UserProfile,
+                          attributes: ['first_name', 'last_name'],
+                          as: 'profile',
+                        },
+                      ],
                     },
                   ],
                 },

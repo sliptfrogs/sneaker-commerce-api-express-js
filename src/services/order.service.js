@@ -165,46 +165,37 @@ export const GetUserOrderService = async (id) => {
               as: 'product',
               include: [
                 {
-                  model: Product,
-                  as: 'productsInCart',
-                  through: {
-                    attributes: ['quantity', 'price_at_time'],
-                  },
+                  model: Category,
+                  attributes: ['id', 'name'],
+                  as: 'category',
+                },
+                {
+                  model: Brand,
+                  attributes: ['id', 'name'],
+                  as: 'brand',
+                },
+                {
+                  model: ProductSize,
+                  attributes: ['size'],
+                  as: 'sizes',
+                },
+                {
+                  model: ProductColor,
+                  attributes: ['color'],
+                  as: 'colors',
+                },
+                {
+                  model: Reviews,
+                  attributes: ['rating', 'comment'],
                   include: [
                     {
-                      model: Category,
-                      attributes: ['id', 'name'],
-                      as: 'category',
-                    },
-                    {
-                      model: Brand,
-                      attributes: ['id', 'name'],
-                      as: 'brand',
-                    },
-                    {
-                      model: ProductSize,
-                      attributes: ['size'],
-                      as: 'sizes',
-                    },
-                    {
-                      model: ProductColor,
-                      attributes: ['color'],
-                      as: 'colors',
-                    },
-                    {
-                      model: Reviews,
-                      attributes: ['rating', 'comment'],
+                      model: User,
+                      attributes: ['id', 'email'],
                       include: [
                         {
-                          model: User,
-                          attributes: ['id', 'email'],
-                          include: [
-                            {
-                              model: UserProfile,
-                              attributes: ['first_name', 'last_name'],
-                              as: 'profile',
-                            },
-                          ],
+                          model: UserProfile,
+                          attributes: ['first_name', 'last_name'],
+                          as: 'profile',
                         },
                       ],
                     },
