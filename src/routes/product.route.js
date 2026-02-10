@@ -35,6 +35,7 @@ productRoute.get('/', protect, getProductsController);
  */
 productRoute.get('/popular', getPopularProductsController);
 // productRoute.get('/category/:id',getProductsViaCategoryController)
+productRoute.delete('/:id', destroyProductController);
 productRoute.get('/:id', getProductController);
 productRoute.patch(
   '/:id',
@@ -45,6 +46,5 @@ productRoute.patch(
   handleValidationError,
   updateProductController,
 );
-productRoute.delete('/:id', destroyProductController);
 
 export default productRoute;
