@@ -8,12 +8,35 @@ on:
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # Create .env.production from GitHub Secrets
+      - name: Create .env.production
+        run: |
+          cat > .env.production << EOF
+          PORT=3001
+          DB_HOST=${{ secrets.PROD_DB_HOST }}
+          DB_USER=${{ secrets.PROD_DB_USER }}
+          DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
+          DB_NAME=${{ secrets.PROD_DB_NAME }}
+          DB_PORT=${{ secrets.PROD_DB_PORT }}
+          DB_SSL=${{ secrets.PROD_DB_SSL }}
+          JWT_ACCESS_SECRET=${{ secrets.PROD_JWT_ACCESS_SECRET }}
+          JWT_ACCESS_EXPIRED_IN="15m"
+          JWT_REFRESH_SECRET=${{ secrets.PROD_JWT_REFRESH_SECRET }}
+          JWT_REFRESH_EXPIRED_IN="7d"
+          BCRYPT_SALT_ROUNDS=10
+          CLOUDINARY_CLOUD_NAME=${{ secrets.PROD_CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY=${{ secrets.PROD_CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET=${{ secrets.PROD_CLOUDINARY_API_SECRET }}
+          NODE_ENV=production
+          EOF
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -39,3 +62,4 @@ jobs:
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/sneaker-api:latest
             docker compose down
             docker compose up -d
+            echo "✓ Deployment to production complete!"

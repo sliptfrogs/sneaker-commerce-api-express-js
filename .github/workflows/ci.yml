@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 jobs:
   build:
@@ -12,13 +12,32 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-node@v3
         with:
           node-version: 20
 
-      - run: npm ci
-
-      - name: Lint
+      # Create .env.dev from secrets for testing
+      - name: Create .env.dev for testing
+        run: |
+          cat > .env.dev << EOF
+          PORT=3001
+          DB_HOST=${{ secrets.DEV_DB_HOST || 'localhost' }}
+          DB_USER=${{ secrets.DEV_DB_USER || 'test' }}
+          DB_PASSWORD=${{ secrets.DEV_DB_PASSWORD || 'test' }}
+          DB_NAME=${{ secrets.DEV_DB_NAME || 'test_db' }}
+          DB_PORT=5432
+          DB_SSL=false
+          JWT_ACCESS_SECRET=${{ secrets.DEV_JWT_ACCESS_SECRET || 'dev-secret-123' }}
+          JWT_ACCESS_EXPIRED_IN="15m"
+          JWT_REFRESH_SECRET=${{ secrets.DEV_JWT_REFRESH_SECRET || 'dev-refresh-123' }}
+          JWT_REFRESH_EXPIRED_IN="7d"
+          BCRYPT_SALT_ROUNDS=10
+          CLOUDINARY_CLOUD_NAME=${{ secrets.DEV_CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY=${{ secrets.DEV_CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET=${{ secrets.DEV_CLOUDINARY_API_SECRET }}
+          NODE_ENV=development
+          EOF
         run: npm run lint
 
       - name: Format
