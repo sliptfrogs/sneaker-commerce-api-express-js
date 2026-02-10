@@ -1,6 +1,16 @@
 import { sequelize } from '../config/SequelizeORM.js';
 import { CartItems } from '../models/cart.items.model.js';
-import { Cart, Product, User } from '../models/index.js';
+import {
+  Brand,
+  Cart,
+  Category,
+  Product,
+  ProductColor,
+  ProductSize,
+  Reviews,
+  User,
+  UserProfile,
+} from '../models/index.js';
 import { ApiError } from '../utils/ApiError.util.js';
 
 export const AddCart = async (userId, reqBody) => {
@@ -66,9 +76,48 @@ export const GetCartItems = async (userId) => {
         {
           model: Product,
           as: 'productsInCart',
-          // through: {
-          //   attributes: ['quantity', 'price_at_time'],
-          // },
+          through: {
+            attributes: ['quantity', 'price_at_time'],
+          },
+          include: [
+            {
+              model: Category,
+              attributes: ['id', 'name'],
+              as: 'category',
+            },
+            {
+              model: Brand,
+              attributes: ['id', 'name'],
+              as: 'brand',
+            },
+            {
+              model: ProductSize,
+              attributes: ['size'],
+              as: 'sizes',
+            },
+            {
+              model: ProductColor,
+              attributes: ['color'],
+              as: 'colors',
+            },
+            {
+              model: Reviews,
+              attributes: ['rating', 'comment'],
+              include: [
+                {
+                  model: User,
+                  attributes: ['id', 'email'],
+                  include: [
+                    {
+                      model: UserProfile,
+                      attributes: ['first_name', 'last_name'],
+                      as: 'profile',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         },
       ],
     });
