@@ -59,7 +59,7 @@ async function start() {
   try {
     await sequelize.authenticate();
     console.log('DB connected');
-    // await sequelize.sync({ alter: true }); // { force: true } to drop and recreate tables
+    await sequelize.sync({ alter: true });
     console.log('Models synced');
 
     app.use(errorHandlingMiddleware);
