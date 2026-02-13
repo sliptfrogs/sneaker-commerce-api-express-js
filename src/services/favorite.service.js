@@ -1,4 +1,14 @@
-import { Favorite, Product, User, UserProfile } from '../models/index.js';
+import {
+  Brand,
+  Category,
+  Favorite,
+  Product,
+  ProductColor,
+  ProductImage,
+  ProductSize,
+  User,
+  UserProfile,
+} from '../models/index.js';
 import { ApiError } from '../utils/ApiError.util.js';
 
 export const addFavoriteService = async (user_id, product_id) => {
@@ -46,6 +56,45 @@ export const getMyFavoritesService = async (user_id) => {
         as: 'favoriteProducts',
         // attributes: ["id", "title"],
         through: { attributes: ['created_at'] },
+        include: [
+          {
+            model: ProductImage,
+            as: 'images',
+            attributes: ['image_url'],
+          },
+          {
+            model: ProductSize,
+            as: 'sizes',
+            attributes: ['size'],
+          },
+          {
+            model: ProductColor,
+            as: 'colors',
+            attributes: ['color'],
+          },
+          {
+            model: Category,
+            as: 'category',
+          },
+          {
+            model: Brand,
+            as: 'brand',
+          },
+          {
+            model: User,
+            as: 'create_by_admin',
+            attributes: ['email'],
+            include: [
+              {
+                model: UserProfile,
+                as: 'profile',
+                attributes: {
+                  exclude: ['user_id'],
+                },
+              },
+            ],
+          },
+        ],
       },
     ],
   });
