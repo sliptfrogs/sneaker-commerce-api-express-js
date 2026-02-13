@@ -54,6 +54,5 @@ export const getMyFavoritesService = async (user_id) => {
     throw new ApiError('Favorites not found', 404);
   }
 
-  
   return userWithFavorites;
 };

@@ -10,14 +10,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [20]
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
-      # Create .env.dev from secrets for testing
+      - name: Install dependencies
+        run: npm ci
+
       - name: Create .env.dev for testing
         run: |
           cat > .env.dev << EOF
@@ -33,15 +42,14 @@ jobs:
           JWT_REFRESH_SECRET=${{ secrets.DEV_JWT_REFRESH_SECRET || 'dev-refresh-123' }}
           JWT_REFRESH_EXPIRED_IN="7d"
           BCRYPT_SALT_ROUNDS=10
-          CLOUDINARY_CLOUD_NAME=${{ secrets.DEV_CLOUDINARY_CLOUD_NAME }}
-          CLOUDINARY_API_KEY=${{ secrets.DEV_CLOUDINARY_API_KEY }}
-          CLOUDINARY_API_SECRET=${{ secrets.DEV_CLOUDINARY_API_SECRET }}
-          NODE_ENV=development
+          NODE_ENV=test
           EOF
+
+      - name: Run ESLint
         run: npm run lint
 
-      - name: Format
-        run: npm run format
+      - name: Check formatting
+        run: npm run format -- --check
 
       - name: Run tests
         run: npm test
