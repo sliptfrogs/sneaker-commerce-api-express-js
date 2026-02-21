@@ -25,132 +25,211 @@ export const CreateCheckoutService = async (req) => {
     const { items, payment_method, coupon_code } = req.body;
     const userId = req.user.id;
 
-    if (!payment_method) {
-      throw new ApiError('Payment method is required', 400);
-    }
-
+    // Basic validations
+    if (!payment_method) throw new ApiError('Payment method is required', 400);
     if (!items || !Array.isArray(items) || items.length === 0) {
       throw new ApiError('Items array is required', 400);
     }
 
-    // 1️⃣ Find the user's active cart
+    // 1️⃣ Find active cart
     const cart = await Cart.findOne({
       where: { user_id: userId, status: 'ACTIVE' },
       transaction: t,
+      lock: t.LOCK.UPDATE,
     });
+    if (!cart) throw new ApiError('Active cart not found', 404);
 
-    if (!cart) {
-      throw new ApiError('Active cart not found for the user', 404);
-    }
-
-    // 2️⃣ Restrict checkout to products that are actually in this user's cart
+    // 2️⃣ Validate all requested products are in cart
     const productIds = items.map((i) => i.product_id);
-
     const cartItems = await CartItems.findAll({
       where: { cart_id: cart.id, product_id: productIds },
       transaction: t,
       lock: t.LOCK.UPDATE,
     });
-
-    const cartItemProductIds = cartItems.map((ci) => ci.product_id);
-    const missingFromCart = productIds.filter(
-      (id) => !cartItemProductIds.includes(id),
-    );
-
-    if (missingFromCart.length > 0) {
-      throw new ApiError(
-        `One or more products are not in your cart: ${missingFromCart.join(', ')}`,
-        400,
-      );
+    const foundIds = cartItems.map((ci) => ci.product_id);
+    const missing = productIds.filter((id) => !foundIds.includes(id));
+    if (missing.length) {
+      throw new ApiError(`Products not in cart: ${missing.join(', ')}`, 400);
     }
 
-    // 3️⃣ Fetch product details for pricing/discounts
+    // 3️⃣ Fetch product details
     const products = await Product.findAll({
       where: { id: productIds },
       transaction: t,
       lock: t.LOCK.UPDATE,
     });
-
     const existingIds = products.map((p) => p.id);
-    const missingIds = productIds.filter((id) => !existingIds.includes(id));
-    if (missingIds.length > 0) {
-      throw new ApiError(`Product not found: ${missingIds.join(', ')}`, 404);
+    const missingProducts = productIds.filter(
+      (id) => !existingIds.includes(id),
+    );
+    if (missingProducts.length) {
+      throw new ApiError(
+        `Products not found: ${missingProducts.join(', ')}`,
+        404,
+      );
     }
 
-    // 4️⃣ Calculate total based on quantities stored in CartItems
-    let totalAmount = 0;
-    let subtotal_amount = 0;
+    // 4️⃣ Stock check
     for (const cartItem of cartItems) {
       const product = products.find((p) => p.id === cartItem.product_id);
-      const price = parseFloat(product.price);
-      const discount = Number(product.discount_percentage) || 0;
-      const discountedPrice = price * (1 - discount / 100);
-      totalAmount += discountedPrice * cartItem.quantity;
-      subtotal_amount += price * cartItem.quantity;
-    }
-
-    // Round to 2 decimals
-    totalAmount = parseFloat(totalAmount.toFixed(2));
-    subtotal_amount = parseFloat(subtotal_amount.toFixed(2));
-
-    let coupon_price_in_fixed = 0;
-    let coupondiscount = null;
-
-    if (coupon_code) {
-      coupondiscount = await Coupon.findOne({
-        where: { code: coupon_code },
-        transaction: t,
-      });
-
-      if (coupondiscount.discount_type === 'FIXED') {
-        coupon_price_in_fixed = coupondiscount.discount_value;
-      } else {
-        coupon_price_in_fixed =
-          (coupondiscount.discount_value / 100) * totalAmount;
+      if (product.stock_quantity < cartItem.quantity) {
+        throw new ApiError(
+          `Insufficient stock for product ${product.name}`,
+          400,
+        );
       }
     }
 
-    coupon_price_in_fixed = parseFloat(coupon_price_in_fixed).toFixed(2);
+    // 5️⃣ Calculate subtotal & total after product discounts (in cents)
+    let subtotalCents = 0;
+    let totalAfterProductDiscountCents = 0;
 
-    totalAmount = totalAmount - coupon_price_in_fixed;
+    for (const cartItem of cartItems) {
+      const product = products.find((p) => p.id === cartItem.product_id);
+      const priceCents = Math.round(product.price * 100); // convert to cents
+      const discountPercent = product.discount_percentage || 0;
+      const discountedPriceCents = Math.round(
+        priceCents * (1 - discountPercent / 100),
+      );
 
-    if (totalAmount < 0) totalAmount = 0;
+      subtotalCents += priceCents * cartItem.quantity;
+      totalAfterProductDiscountCents +=
+        discountedPriceCents * cartItem.quantity;
+    }
 
-    // 5️⃣ Create Order for this user
+    // 6️⃣ Coupon handling
+    let coupon = null;
+    let couponDiscountCents = 0;
+
+    if (coupon_code) {
+      coupon = await Coupon.findOne({
+        where: { code: coupon_code },
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+      if (!coupon) throw new ApiError('Invalid coupon code', 400);
+
+      // Validate coupon
+      const now = new Date();
+      if (coupon.expiry_date && coupon.expiry_date < now) {
+        throw new ApiError('Coupon expired', 400);
+      }
+      if (!coupon.is_active) {
+        throw new ApiError('Coupon inactive', 400);
+      }
+      if (coupon.min_order_amount) {
+        const minOrderCents = Math.round(coupon.min_order_amount * 100);
+        if (minOrderCents > totalAfterProductDiscountCents) {
+          throw new ApiError(
+            `Minimum order amount is ${coupon.min_order_amount}`,
+            400,
+          );
+        }
+      }
+
+      // Usage limits
+      if (
+        coupon.usage_limit_global &&
+        coupon.used_count >= coupon.usage_limit_global
+      ) {
+        throw new ApiError('Coupon usage limit reached', 400);
+      }
+      if (coupon.usage_limit_per_user) {
+        const userUsage = await Order.count({
+          where: { user_id: userId, coupon_id: coupon.id },
+          transaction: t,
+        });
+        if (userUsage >= coupon.usage_limit_per_user) {
+          throw new ApiError(
+            'You have already used this coupon the maximum times',
+            400,
+          );
+        }
+      }
+
+      // Calculate discount in cents
+      if (coupon.discount_type === 'FIXED') {
+        couponDiscountCents = Math.round(coupon.discount_value * 100);
+      } else {
+        // PERCENTAGE
+        couponDiscountCents = Math.round(
+          (coupon.discount_value / 100) * totalAfterProductDiscountCents,
+        );
+      }
+
+      // Cap discount to total
+      if (couponDiscountCents > totalAfterProductDiscountCents) {
+        couponDiscountCents = totalAfterProductDiscountCents;
+      }
+    }
+
+    // 7️⃣ Final total in cents
+    let finalTotalCents = totalAfterProductDiscountCents - couponDiscountCents;
+    if (finalTotalCents < 0) finalTotalCents = 0;
+
+    // Convert back to dollars for storage (or keep as cents if DB stores integers)
+    const finalTotal = finalTotalCents / 100;
+    const subtotal = subtotalCents / 100;
+    const discountAmount = (subtotalCents - finalTotalCents) / 100;
+
+    // 8️⃣ Create order
     const order = await Order.create(
       {
         user_id: userId,
         payment_method,
-        total_amount: totalAmount,
-        subtotal_amount: subtotal_amount,
-        discount_amount: subtotal_amount - totalAmount,
-        coupon_id: coupondiscount ? coupondiscount.id : null,
+        subtotal_amount: subtotal,
+        total_amount: finalTotal,
+        discount_amount: discountAmount,
+        coupon_id: coupon ? coupon.id : null,
         status: 'PENDING',
+        // tax, shipping if needed
       },
       { transaction: t },
     );
 
-    // 6️⃣ Create OrderItems from the user's cart items
-    const orderItemsData = cartItems.map((cartItem) => {
+    // 9️⃣ Create order items and reduce stock
+    for (const cartItem of cartItems) {
       const product = products.find((p) => p.id === cartItem.product_id);
-      return {
-        order_id: order.id,
-        product_id: product.id,
-        price: product.price,
-        quantity: cartItem.quantity,
-      };
-    });
+      await OrderItems.create(
+        {
+          order_id: order.id,
+          product_id: product.id,
+          price: product.price,
+          quantity: cartItem.quantity,
+        },
+        { transaction: t },
+      );
 
-    await OrderItems.bulkCreate(orderItemsData, { transaction: t });
+      product.stock_quantity -= cartItem.quantity;
+      await product.save({ transaction: t });
+    }
+
+    // 🔟 Mark cart as checked out and create new active cart
+    cart.status = 'CHECKED_OUT';
+    await cart.save({ transaction: t });
+
+    await Cart.create(
+      {
+        user_id: userId,
+        status: 'ACTIVE',
+      },
+      { transaction: t },
+    );
+
+    if (coupon) {
+      coupon.used_count += 1;
+      await coupon.save({ transaction: t });
+    }
 
     await t.commit();
-
     return order;
   } catch (error) {
     await t.rollback();
-    throw new ApiError(error.message, error.statusCode || 500);
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(error.message, 500);
   }
 };
+
 export const GetUserOrderService = async (id) => {
   try {
     const checkouts = await Order.findAll({

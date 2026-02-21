@@ -1,14 +1,14 @@
 import { Sequelize, DataTypes } from 'sequelize';
 import dotenv from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
+// import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const env = process.env.NODE_ENV || 'development';
-const envFile = env === 'production' ? '.env.production' : '.env.dev';
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// const env = process.env.NODE_ENV || 'development';
+// const envFile = env === 'production' ? '.env.production' : '.env.dev';
 
-dotenv.config({ path: path.resolve(__dirname, '../../', envFile) });
-
+// dotenv.config({ path: path.resolve(__dirname, '../../', envFile) });
+dotenv.config();
 export const sequelize = new Sequelize(
   process.env.DB_NAME, // database name
   process.env.DB_USER, // username
