@@ -59,7 +59,7 @@ export const authLoginService = async (userReq) => {
         {
           model: FakeBankAccount,
           as: 'bankAccount',
-          attributes: ['balance'],
+          attributes: ['balance', 'card_number'],
         },
       ],
     });
