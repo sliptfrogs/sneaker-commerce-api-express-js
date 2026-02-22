@@ -85,6 +85,7 @@ export const authLoginService = async (userReq) => {
       id: user.id,
       email: user.email,
       balance: user.bankAccount ? user.bankAccount.balance : 0,
+      cart_id: user.bankAccount ? user.bankAccount.card_number : null,
       profile: user.profile,
       currency: 'USD',
       role: user.role,
