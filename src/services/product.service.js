@@ -149,7 +149,6 @@ export const getProductsService = async () => {
       // ✅ ALL SORTING HERE
       order: [
         ['id', 'ASC'], // Sort products by id
-
         // Sort sizes by id
         [{ model: ProductSize, as: 'sizes' }, 'id', 'ASC'],
 
