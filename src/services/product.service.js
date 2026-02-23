@@ -110,7 +110,7 @@ export const getProductsService = async () => {
         {
           model: ProductImage,
           as: 'images',
-          attributes: ['image_url'],
+          attributes: ['id', 'image_url'],
         },
         {
           model: ProductSize,
@@ -154,6 +154,8 @@ export const getProductsService = async () => {
 
         // Sort colors by id
         [{ model: ProductColor, as: 'colors' }, 'id', 'ASC'],
+
+        [{ model: ProductImage, as: 'images' }, 'id', 'ASC'],
       ],
     });
 
