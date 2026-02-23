@@ -122,6 +122,7 @@ export const getProductsService = async () => {
           model: ProductColor,
           as: 'colors',
           attributes: ['color'],
+          order: [['color', 'ASC']], // added ordering
         },
         {
           model: Category,
@@ -139,26 +140,20 @@ export const getProductsService = async () => {
             {
               model: UserProfile,
               as: 'profile',
-              attributes: {
-                exclude: ['user_id'],
-              },
+              attributes: { exclude: ['user_id'] },
             },
           ],
         },
       ],
-      attributes: {
-        exclude: ['category_id', 'brand_id', 'created_by'],
-      },
+      attributes: { exclude: ['category_id', 'brand_id', 'created_by'] },
     });
 
     return products;
   } catch (error) {
-    if (error instanceof UniqueConstraintError) {
-      throw new ApiError('Product already exists', error.statusCode);
-    }
-    throw new ApiError(error.message, error.statusCode);
+    throw new ApiError(error.message, error.statusCode || 500);
   }
 };
+
 export const getAllProductsViaCategoryService = async (categoryId) => {
   try {
     const products = await Product.findAll({

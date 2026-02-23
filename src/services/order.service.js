@@ -295,12 +295,13 @@ export const GetUserOrderService = async (id) => {
                   model: ProductSize,
                   attributes: ['size'],
                   as: 'sizes',
-                  order: [['size', 'ASC']],
+                  order: [['size', 'ASC']], // sort sizes alphabetically
                 },
                 {
                   model: ProductColor,
                   attributes: ['color'],
                   as: 'colors',
+                  order: [['color', 'ASC']], // ✅ sort colors alphabetically
                 },
                 {
                   model: Reviews,
@@ -338,6 +339,7 @@ export const GetUserOrderService = async (id) => {
     );
   }
 };
+
 export const PayUserOrderService = async (userId, orderId, cardNumber) => {
   const t = await sequelize.transaction();
   try {
