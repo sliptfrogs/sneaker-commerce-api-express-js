@@ -88,6 +88,19 @@ export const GetCartItems = async (userId) => {
                   as: 'sizes',
                   attributes: ['id', 'size'],
                 },
+                {
+                  model: ProductColor,
+                  as: 'colors',
+                  attributes: ['id', 'color'],
+                },
+                {
+                  model: Category,
+                  as: 'category',
+                },
+                {
+                  model: Brand,
+                  as: 'brand',
+                },
               ],
             },
           ],
