@@ -21,73 +21,89 @@ import {
 
 export const CreateCheckoutService = async (req) => {
   const t = await sequelize.transaction();
+
   try {
     const { items, payment_method, coupon_code } = req.body;
     const userId = req.user.id;
 
-    // Basic validations
-    if (!payment_method) throw new ApiError('Payment method is required', 400);
-    if (!items || !Array.isArray(items) || items.length === 0) {
+    if (!payment_method) {
+      throw new ApiError('Payment method is required', 400);
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
       throw new ApiError('Items array is required', 400);
     }
 
-    // 1️⃣ Find active cart
+    // Prevent duplicate product IDs
+    const productIds = items.map((i) => i.product_id);
+    if (new Set(productIds).size !== productIds.length) {
+      throw new ApiError('Duplicate products in request', 400);
+    }
+
+    // 1️⃣ Get active cart (lock)
     const cart = await Cart.findOne({
       where: { user_id: userId, status: 'ACTIVE' },
       transaction: t,
       lock: t.LOCK.UPDATE,
     });
-    if (!cart) throw new ApiError('Active cart not found', 404);
 
-    // 2️⃣ Validate all requested products are in cart
-    const productIds = items.map((i) => i.product_id);
+    if (!cart) {
+      throw new ApiError('Active cart not found', 404);
+    }
+
+    // 2️⃣ Get cart items for requested products (lock)
     const cartItems = await CartItems.findAll({
-      where: { cart_id: cart.id, product_id: productIds },
+      where: {
+        cart_id: cart.id,
+        product_id: productIds,
+      },
       transaction: t,
       lock: t.LOCK.UPDATE,
     });
+
     const foundIds = cartItems.map((ci) => ci.product_id);
-    const missing = productIds.filter((id) => !foundIds.includes(id));
-    if (missing.length) {
-      throw new ApiError(`Products not in cart: ${missing.join(', ')}`, 400);
+    const missingIds = productIds.filter((id) => !foundIds.includes(id));
+
+    if (missingIds.length > 0) {
+      throw new ApiError(`Products not in cart: ${missingIds.join(', ')}`, 400);
     }
 
-    // 3️⃣ Fetch product details
+    // 3️⃣ Fetch products (lock)
     const products = await Product.findAll({
       where: { id: productIds },
       transaction: t,
       lock: t.LOCK.UPDATE,
     });
-    const existingIds = products.map((p) => p.id);
-    const missingProducts = productIds.filter(
-      (id) => !existingIds.includes(id),
-    );
-    if (missingProducts.length) {
-      throw new ApiError(
-        `Products not found: ${missingProducts.join(', ')}`,
-        404,
-      );
+
+    if (products.length !== productIds.length) {
+      throw new ApiError('Some products not found', 404);
     }
 
-    // 4️⃣ Stock check
+    const productMap = new Map(products.map((p) => [p.id, p]));
+
+    // 4️⃣ Stock validation
     for (const cartItem of cartItems) {
-      const product = products.find((p) => p.id === cartItem.product_id);
+      const product = productMap.get(cartItem.product_id);
+
+      if (!product) {
+        throw new ApiError('Product not found', 404);
+      }
+
       if (product.stock_quantity < cartItem.quantity) {
-        throw new ApiError(
-          `Insufficient stock for product ${product.name}`,
-          400,
-        );
+        throw new ApiError(`Insufficient stock for ${product.name}`, 400);
       }
     }
 
-    // 5️⃣ Calculate subtotal & total after product discounts (in cents)
+    // 5️⃣ Calculate subtotal & discounts (in cents)
     let subtotalCents = 0;
     let totalAfterProductDiscountCents = 0;
 
     for (const cartItem of cartItems) {
-      const product = products.find((p) => p.id === cartItem.product_id);
-      const priceCents = Math.round(product.price * 100); // convert to cents
+      const product = productMap.get(cartItem.product_id);
+
+      const priceCents = Math.round(product.price * 100);
       const discountPercent = product.discount_percentage || 0;
+
       const discountedPriceCents = Math.round(
         priceCents * (1 - discountPercent / 100),
       );
@@ -107,19 +123,24 @@ export const CreateCheckoutService = async (req) => {
         transaction: t,
         lock: t.LOCK.UPDATE,
       });
-      if (!coupon) throw new ApiError('Invalid coupon code', 400);
 
-      // Validate coupon
-      const now = new Date();
-      if (coupon.expiry_date && coupon.expiry_date < now) {
-        throw new ApiError('Coupon expired', 400);
+      if (!coupon) {
+        throw new ApiError('Invalid coupon code', 400);
       }
+
+      const now = new Date();
+
       if (!coupon.is_active) {
         throw new ApiError('Coupon inactive', 400);
       }
+
+      if (coupon.expiry_date && coupon.expiry_date < now) {
+        throw new ApiError('Coupon expired', 400);
+      }
+
       if (coupon.min_order_amount) {
         const minOrderCents = Math.round(coupon.min_order_amount * 100);
-        if (minOrderCents > totalAfterProductDiscountCents) {
+        if (totalAfterProductDiscountCents < minOrderCents) {
           throw new ApiError(
             `Minimum order amount is ${coupon.min_order_amount}`,
             400,
@@ -127,49 +148,44 @@ export const CreateCheckoutService = async (req) => {
         }
       }
 
-      // Usage limits
       if (
         coupon.usage_limit_global &&
         coupon.used_count >= coupon.usage_limit_global
       ) {
         throw new ApiError('Coupon usage limit reached', 400);
       }
+
       if (coupon.usage_limit_per_user) {
         const userUsage = await Order.count({
           where: { user_id: userId, coupon_id: coupon.id },
           transaction: t,
         });
+
         if (userUsage >= coupon.usage_limit_per_user) {
-          throw new ApiError(
-            'You have already used this coupon the maximum times',
-            400,
-          );
+          throw new ApiError('You have reached coupon usage limit', 400);
         }
       }
 
-      // Calculate discount in cents
       if (coupon.discount_type === 'FIXED') {
         couponDiscountCents = Math.round(coupon.discount_value * 100);
       } else {
-        // PERCENTAGE
         couponDiscountCents = Math.round(
           (coupon.discount_value / 100) * totalAfterProductDiscountCents,
         );
       }
 
-      // Cap discount to total
       if (couponDiscountCents > totalAfterProductDiscountCents) {
         couponDiscountCents = totalAfterProductDiscountCents;
       }
     }
 
-    // 7️⃣ Final total in cents
+    // 7️⃣ Final total
     let finalTotalCents = totalAfterProductDiscountCents - couponDiscountCents;
+
     if (finalTotalCents < 0) finalTotalCents = 0;
 
-    // Convert back to dollars for storage (or keep as cents if DB stores integers)
-    const finalTotal = finalTotalCents / 100;
     const subtotal = subtotalCents / 100;
+    const totalAmount = finalTotalCents / 100;
     const discountAmount = (subtotalCents - finalTotalCents) / 100;
 
     // 8️⃣ Create order
@@ -178,18 +194,18 @@ export const CreateCheckoutService = async (req) => {
         user_id: userId,
         payment_method,
         subtotal_amount: subtotal,
-        total_amount: finalTotal,
+        total_amount: totalAmount,
         discount_amount: discountAmount,
         coupon_id: coupon ? coupon.id : null,
         status: 'PENDING',
-        // tax, shipping if needed
       },
       { transaction: t },
     );
 
-    // 9️⃣ Create order items and reduce stock
+    // 9️⃣ Create order items + reduce stock
     for (const cartItem of cartItems) {
-      const product = products.find((p) => p.id === cartItem.product_id);
+      const product = productMap.get(cartItem.product_id);
+
       await OrderItems.create(
         {
           order_id: order.id,
@@ -204,28 +220,50 @@ export const CreateCheckoutService = async (req) => {
       await product.save({ transaction: t });
     }
 
-    // 🔟 Mark cart as checked out and create new active cart
-    cart.status = 'CHECKED_OUT';
-    await cart.save({ transaction: t });
-
-    await Cart.create(
-      {
-        user_id: userId,
-        status: 'ACTIVE',
+    // 🔟 Remove ONLY checked-out items from cart
+    await CartItems.destroy({
+      where: {
+        cart_id: cart.id,
+        product_id: productIds,
       },
-      { transaction: t },
-    );
+      transaction: t,
+    });
 
+    // 1️⃣1️⃣ If cart empty → close it and create new one
+    const remainingItems = await CartItems.count({
+      where: { cart_id: cart.id },
+      transaction: t,
+    });
+
+    if (remainingItems === 0) {
+      cart.status = 'CHECKED_OUT';
+      await cart.save({ transaction: t });
+
+      await Cart.create(
+        {
+          user_id: userId,
+          status: 'ACTIVE',
+        },
+        { transaction: t },
+      );
+    }
+
+    // 1️⃣2️⃣ Increase coupon usage
     if (coupon) {
       coupon.used_count += 1;
       await coupon.save({ transaction: t });
     }
 
     await t.commit();
+
     return order;
   } catch (error) {
     await t.rollback();
-    if (error instanceof ApiError) throw error;
+
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
     throw new ApiError(error.message, 500);
   }
 };
@@ -257,6 +295,7 @@ export const GetUserOrderService = async (id) => {
                   model: ProductSize,
                   attributes: ['size'],
                   as: 'sizes',
+                  order: [['size', 'ASC']],
                 },
                 {
                   model: ProductColor,

@@ -116,6 +116,7 @@ export const getProductsService = async () => {
           model: ProductSize,
           as: 'sizes',
           attributes: ['size'],
+          order: [['size', 'ASC']],
         },
         {
           model: ProductColor,

@@ -235,6 +235,13 @@ Cart.belongsToMany(Product, {
   otherKey: 'product_id',
   as: 'productsInCart',
 });
+Cart.hasMany(CartItems, { foreignKey: 'cart_id', as: 'cartItems' });
+Product.hasMany(CartItems, { foreignKey: 'product_id', as: 'cartItems' });
+CartItems.belongsTo(Cart, { foreignKey: 'cart_id', as: 'cart' });
+CartItems.belongsTo(Product, {
+  foreignKey: 'product_id',
+  as: 'products_in_cart',
+});
 
 // Cart ↔ User (One-to-One)
 User.hasOne(Cart, {
