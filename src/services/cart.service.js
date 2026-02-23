@@ -106,11 +106,19 @@ export const GetCartItems = async (userId) => {
           ],
         },
       ],
+
       order: [
         [
           { model: CartItems, as: 'cartItems' },
           { model: Product, as: 'products_in_cart' },
           { model: ProductSize, as: 'sizes' },
+          'id',
+          'ASC',
+        ],
+        [
+          { model: CartItems, as: 'cartItems' },
+          { model: Product, as: 'products_in_cart' },
+          { model: ProductColor, as: 'colors' },
           'id',
           'ASC',
         ],
