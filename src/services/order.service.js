@@ -283,29 +283,34 @@ export const GetUserOrderService = async (id) => {
               include: [
                 {
                   model: Category,
-                  attributes: ['id', 'name'],
                   as: 'category',
+                  attributes: ['id', 'name'],
                 },
                 {
                   model: Brand,
-                  attributes: ['id', 'name'],
                   as: 'brand',
+                  attributes: ['id', 'name'],
                 },
                 {
                   model: ProductSize,
-                  attributes: ['size'],
                   as: 'sizes',
-                  order: [['size', 'ASC']], // sort sizes alphabetically
+                  attributes: ['size'],
+                  separate: true, // ✅ IMPORTANT
+                  order: [['size', 'ASC']], // ✅ now works
                 },
                 {
                   model: ProductColor,
-                  attributes: ['color'],
                   as: 'colors',
-                  order: [['color', 'ASC']], // ✅ sort colors alphabetically
+                  attributes: ['color'],
+                  separate: true, // optional but safer
+                  order: [['color', 'ASC']],
                 },
                 {
                   model: Reviews,
+                  as: 'review_tbs', // ⚠ must match your association alias
                   attributes: ['rating', 'comment'],
+                  separate: true, // optional (prevents row duplication)
+                  order: [['createdAt', 'DESC']],
                   include: [
                     {
                       model: User,
@@ -313,8 +318,8 @@ export const GetUserOrderService = async (id) => {
                       include: [
                         {
                           model: UserProfile,
-                          attributes: ['first_name', 'last_name'],
                           as: 'profile',
+                          attributes: ['first_name', 'last_name'],
                         },
                       ],
                     },
@@ -329,8 +334,9 @@ export const GetUserOrderService = async (id) => {
           as: 'payment',
         },
       ],
-      order: [['createdAt', 'DESC']],
+      order: [['createdAt', 'DESC']], // Orders newest first
     });
+
     return checkouts;
   } catch (error) {
     throw new ApiError(
