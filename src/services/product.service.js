@@ -115,14 +115,12 @@ export const getProductsService = async () => {
         {
           model: ProductSize,
           as: 'sizes',
-          attributes: ['size'],
-          order: [['size', 'ASC']],
+          attributes: ['id', 'size'],
         },
         {
           model: ProductColor,
           as: 'colors',
-          attributes: ['color'],
-          order: [['color', 'ASC']], // added ordering
+          attributes: ['id', 'color'],
         },
         {
           model: Category,
@@ -145,7 +143,19 @@ export const getProductsService = async () => {
           ],
         },
       ],
+
       attributes: { exclude: ['category_id', 'brand_id', 'created_by'] },
+
+      // ✅ ALL SORTING HERE
+      order: [
+        ['id', 'ASC'], // Sort products by id
+
+        // Sort sizes by id
+        [{ model: ProductSize, as: 'sizes' }, 'id', 'ASC'],
+
+        // Sort colors by id
+        [{ model: ProductColor, as: 'colors' }, 'id', 'ASC'],
+      ],
     });
 
     return products;

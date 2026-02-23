@@ -294,23 +294,23 @@ export const GetUserOrderService = async (id) => {
                 {
                   model: ProductSize,
                   as: 'sizes',
-                  attributes: ['size'],
-                  separate: true, // ✅ IMPORTANT
-                  order: [['size', 'ASC']], // ✅ now works
+                  attributes: ['id', 'size'],
+                  separate: true, // allows proper sorting
+                  order: [['id', 'ASC']], // sort by id
                 },
                 {
                   model: ProductColor,
                   as: 'colors',
-                  attributes: ['color'],
-                  separate: true, // optional but safer
-                  order: [['color', 'ASC']],
+                  attributes: ['id', 'color'],
+                  separate: true, // ⚠ required for correct ordering
+                  order: [['id', 'ASC']], // sort by id
                 },
                 {
                   model: Reviews,
-                  as: 'review_tbs', // ⚠ must match your association alias
-                  attributes: ['rating', 'comment'],
-                  separate: true, // optional (prevents row duplication)
-                  order: [['createdAt', 'DESC']],
+                  as: 'review_tbs', // must match your alias
+                  attributes: ['rating', 'comment', 'createdAt'],
+                  separate: true,
+                  order: [['createdAt', 'DESC']], // newest reviews first
                   include: [
                     {
                       model: User,
@@ -334,7 +334,8 @@ export const GetUserOrderService = async (id) => {
           as: 'payment',
         },
       ],
-      order: [['createdAt', 'DESC']], // Orders newest first
+
+      order: [['createdAt', 'DESC']], // orders newest first
     });
 
     return checkouts;
