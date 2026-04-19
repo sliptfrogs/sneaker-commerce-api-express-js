@@ -21,10 +21,12 @@ import {
 
 export const CreateCheckoutService = async (req) => {
   const t = await sequelize.transaction();
+
   try {
     const { items, payment_method, coupon_code } = req.body;
     const userId = req.user.id;
 
+    // 1️⃣ Validate input
     if (!payment_method) {
       throw new ApiError('Payment method is required', 400);
     }
@@ -33,7 +35,7 @@ export const CreateCheckoutService = async (req) => {
       throw new ApiError('Items array is required', 400);
     }
 
-    // 1️⃣ Find the user's active cart
+    // 2️⃣ Find active cart
     const cart = await Cart.findOne({
       where: { user_id: userId, status: 'ACTIVE' },
       transaction: t,
@@ -43,16 +45,21 @@ export const CreateCheckoutService = async (req) => {
       throw new ApiError('Active cart not found for the user', 404);
     }
 
-    // 2️⃣ Restrict checkout to products that are actually in this user's cart
+    // 3️⃣ Extract product IDs
     const productIds = items.map((i) => i.product_id);
 
+    // 4️⃣ Get cart items with lock
     const cartItems = await CartItems.findAll({
-      where: { cart_id: cart.id, product_id: productIds },
+      where: {
+        cart_id: cart.id,
+        product_id: productIds,
+      },
       transaction: t,
       lock: t.LOCK.UPDATE,
     });
 
     const cartItemProductIds = cartItems.map((ci) => ci.product_id);
+
     const missingFromCart = productIds.filter(
       (id) => !cartItemProductIds.includes(id),
     );
@@ -64,7 +71,7 @@ export const CreateCheckoutService = async (req) => {
       );
     }
 
-    // 3️⃣ Fetch product details for pricing/discounts
+    // 5️⃣ Fetch products
     const products = await Product.findAll({
       where: { id: productIds },
       transaction: t,
@@ -72,27 +79,33 @@ export const CreateCheckoutService = async (req) => {
     });
 
     const existingIds = products.map((p) => p.id);
+
     const missingIds = productIds.filter((id) => !existingIds.includes(id));
+
     if (missingIds.length > 0) {
       throw new ApiError(`Product not found: ${missingIds.join(', ')}`, 404);
     }
 
-    // 4️⃣ Calculate total based on quantities stored in CartItems
+    // 6️⃣ Calculate totals
     let totalAmount = 0;
     let subtotal_amount = 0;
+
     for (const cartItem of cartItems) {
       const product = products.find((p) => p.id === cartItem.product_id);
-      const price = parseFloat(product.price);
+
+      const price = Number(product.price);
       const discount = Number(product.discount_percentage) || 0;
+
       const discountedPrice = price * (1 - discount / 100);
+
       totalAmount += discountedPrice * cartItem.quantity;
       subtotal_amount += price * cartItem.quantity;
     }
 
-    // Round to 2 decimals
-    totalAmount = parseFloat(totalAmount.toFixed(2));
-    subtotal_amount = parseFloat(subtotal_amount.toFixed(2));
+    totalAmount = Number(totalAmount.toFixed(2));
+    subtotal_amount = Number(subtotal_amount.toFixed(2));
 
+    // 7️⃣ Coupon logic (SAFE)
     let coupon_price_in_fixed = 0;
     let coupondiscount = null;
 
@@ -102,27 +115,31 @@ export const CreateCheckoutService = async (req) => {
         transaction: t,
       });
 
+      if (!coupondiscount) {
+        throw new ApiError('Invalid coupon code', 400);
+      }
+
       if (coupondiscount.discount_type === 'FIXED') {
-        coupon_price_in_fixed = coupondiscount.discount_value;
+        coupon_price_in_fixed = Number(coupondiscount.discount_value);
       } else {
         coupon_price_in_fixed =
-          (coupondiscount.discount_value / 100) * totalAmount;
+          (Number(coupondiscount.discount_value) / 100) * totalAmount;
       }
     }
 
-    coupon_price_in_fixed = parseFloat(coupon_price_in_fixed).toFixed(2);
+    coupon_price_in_fixed = Number(coupon_price_in_fixed.toFixed(2));
 
     totalAmount = totalAmount - coupon_price_in_fixed;
 
     if (totalAmount < 0) totalAmount = 0;
 
-    // 5️⃣ Create Order for this user
+    // 8️⃣ Create Order
     const order = await Order.create(
       {
         user_id: userId,
         payment_method,
         total_amount: totalAmount,
-        subtotal_amount: subtotal_amount,
+        subtotal_amount,
         discount_amount: subtotal_amount - totalAmount,
         coupon_id: coupondiscount ? coupondiscount.id : null,
         status: 'PENDING',
@@ -130,9 +147,10 @@ export const CreateCheckoutService = async (req) => {
       { transaction: t },
     );
 
-    // 6️⃣ Create OrderItems from the user's cart items
+    // 9️⃣ Create Order Items
     const orderItemsData = cartItems.map((cartItem) => {
       const product = products.find((p) => p.id === cartItem.product_id);
+
       return {
         order_id: order.id,
         product_id: product.id,
@@ -143,11 +161,22 @@ export const CreateCheckoutService = async (req) => {
 
     await OrderItems.bulkCreate(orderItemsData, { transaction: t });
 
+    // 🔟 Remove only checked-out items from cart (OPTIMIZED)
+    await CartItems.destroy({
+      where: {
+        cart_id: cart.id,
+        product_id: productIds,
+      },
+      transaction: t,
+    });
+
+    // 🔥 Commit transaction
     await t.commit();
 
     return order;
   } catch (error) {
     await t.rollback();
+
     throw new ApiError(error.message, error.statusCode || 500);
   }
 };
