@@ -181,41 +181,63 @@ export const updateQuantityCartByIdService = async (
   userId,
   quantity,
 ) => {
+  const t = await sequelize.transaction();
+
   try {
     const findUserCart = await Cart.findOne({
       where: {
         user_id: userId,
       },
+      transaction: t,
     });
+
     if (!findUserCart) {
       throw new ApiError('User cart is empty', 404);
     }
+
     const findCartItems = await CartItems.findOne({
       where: {
         cart_id: findUserCart.id,
         product_id: productId,
       },
+      transaction: t,
     });
+
     if (!findCartItems) {
-      throw new ApiError('Cart not found');
+      throw new ApiError('Cart not found', 404);
     }
 
     const checkValidQuantity = findCartItems.quantity + quantity;
+
     if (checkValidQuantity < 0) {
-      throw new ApiError('Cart quantity must be negative or below 0');
-    } else if (checkValidQuantity == 0) {
-      await findCartItems.destroy();
+      throw new ApiError('Cart quantity cannot be below 0', 400);
+    }
+
+    // If quantity becomes 0 → delete item
+    if (checkValidQuantity === 0) {
+      await findCartItems.destroy({ transaction: t });
+      await t.commit();
       return;
     }
 
-    // const findCartItms
+    // ⚠️ FIX: price should NOT multiply existing price again
+    // You should use unit price instead (recommended)
+    const unitPrice = findCartItems.price_at_time / findCartItems.quantity;
 
-    await findCartItems.update({
-      quantity: checkValidQuantity,
-      price_at_time: findCartItems.price_at_time * checkValidQuantity,
-    });
-    return;
+    await findCartItems.update(
+      {
+        quantity: checkValidQuantity,
+        price_at_time: unitPrice * checkValidQuantity,
+      },
+      {
+        transaction: t,
+      },
+    );
+
+    await t.commit();
   } catch (error) {
-    throw new ApiError(error.message, error.statusCode);
+    await t.rollback();
+
+    throw new ApiError(error.message, error.statusCode || 500);
   }
 };
