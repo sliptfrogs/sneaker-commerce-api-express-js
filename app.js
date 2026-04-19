@@ -52,6 +52,9 @@ app.use(ROUTE_URL + '/orders', orderRoute);
 app.use(ROUTE_URL + '/recently-viewed', recentlyViewRoute);
 app.use(ROUTE_URL + '/cart', cartRouter);
 app.use(ROUTE_URL + '/coupon', couponRouter);
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 const PORT = process.env.PORT || 3000;
 
@@ -59,7 +62,7 @@ async function start() {
   try {
     await sequelize.authenticate();
     console.log('DB connected');
-    // await sequelize.sync({ alter: true });
+    await sequelize.sync();
     console.log('Models synced');
 
     app.use(errorHandlingMiddleware);
