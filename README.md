@@ -1,88 +1,196 @@
 # 🐳 Sneaker Commerce API
 
-A modern Express.js backend for Sneaker Commerce, fully containerized with **Docker + Docker Compose**.
+---
+
+## 🔄 Get Latest Code (Git)
+
+### 1. Go to your project folder
+
+```bash
+cd your-project-folder
+```
+
+### 2. Pull latest code from remote
+
+```bash
+git pull origin main
+```
+
+> If your branch is `master` instead of `main`:
+
+```bash
+git pull origin master
+```
 
 ---
 
-## 🚀 Quick Start
+## 📌 What this does
 
-### Start all services
+* Fetches latest commits from GitHub
+* Merges them into your local branch
+* Updates your project to the newest version
+
+---
+
+## 🧠 Useful Git checks
+
+Check status:
+
+```bash
+git status
+```
+
+View recent commits:
+
+```bash
+git log --oneline -5
+```
+
+---
+
+## ⚠️ If you have local changes
+
+### Option 1: Keep changes
+
+```bash
+git stash
+git pull origin main
+git stash pop
+```
+
+### Option 2: Remove local changes
+
+```bash
+git reset --hard
+git pull origin main
+```
+
+---
+
+## 🐳 After pulling code (Docker)
+
+Rebuild containers:
+
+```bash
+docker-compose down
+docker-compose up -d --build
+```
+
+---
+
+## 🚀 Quick Start (Docker)
+
+A modern Express.js backend for Sneaker Commerce, fully containerized using Docker + Docker Compose.
+
+### 1. Build and start all services
 
 ```bash
 docker-compose up -d --build
-Check running containers
-Bashdocker-compose ps
-View Logs
-Bash# All services
+```
+
+### 2. Check running containers
+
+```bash
+docker-compose ps
+```
+
+### 3. View logs
+
+```bash
+# All services
 docker-compose logs -f
 
-# API logs only
+# API only
 docker-compose logs -f api
 
-# PostgreSQL logs only
+# Database only
 docker-compose logs -f postgres
-API Health Check
-Bashcurl http://localhost:3000/health
-Expected Response:
-JSON{
+```
+
+---
+
+## 🌐 API Info
+
+### Health Check
+
+```bash
+curl http://localhost:3000/health
+```
+
+Expected response:
+
+```json
+{
   "status": "ok"
 }
-API Base URL
-texthttp://localhost:3000/v1/api
+```
 
-🛑 Stop the Services
-Stop containers
-Bashdocker-compose down
-Stop and reset everything (Clear Database)
-Bashdocker-compose down -v
-⚠️ Warning: This will delete all PostgreSQL data.
-Rebuild from scratch
-Bashdocker-compose down -v
+### Base URL
+
+```
+http://localhost:3000/v1/api
+```
+
+---
+
+## 🛑 Stop Services
+
+### Stop containers
+
+```bash
+docker-compose down
+```
+
+### Stop + delete database data (reset everything)
+
+```bash
+docker-compose down -v
+```
+
+⚠️ This will permanently delete PostgreSQL data.
+
+---
+
+## 🔁 Rebuild Project
+
+If something breaks or DB changes:
+
+```bash
+docker-compose down -v
 docker-compose up -d --build
+```
 
-⚠️ Important Notes
+---
 
-Use postgres as the database host (NOT localhost)
-Make sure a .env file exists if required
-PostgreSQL data is persisted using Docker volume
-The API runs on port 3000
+## ⚙️ Important Notes
 
+* Use `postgres` as DB host inside Docker (NOT `localhost`)
+* Ensure `.env` file exists if required
+* PostgreSQL data is stored in a Docker volume (persistent)
+* API runs on port `3000`
 
-🧠 Troubleshooting
-If the API cannot connect to the database:
-Bashdocker-compose down -v
+---
+
+## 🧠 Troubleshooting
+
+If DB connection fails:
+
+```bash
+docker-compose down -v
 docker-compose up --build
+```
 
-📦 Services
+---
 
+## 📦 Services
 
+| Service  | Description         |
+| -------- | ------------------- |
+| api      | Express.js backend  |
+| postgres | PostgreSQL database |
 
+---
 
+## ❤️ Author
 
-
-
-
-
-
-
-
-
-
-
-
-
-ServiceDescriptionapiExpress.js backendpostgresPostgreSQL database
-
-Made with ❤️ for Sneaker Commerce API
-text---
-
-**How to use:**
-
-1. Copy everything above
-2. Open your project folder
-3. Create or replace the file named `README.md`
-4. Paste the content and save
-
-You're all set! This is a complete, single-file README.md.
-
-Let me know if you want to add more sections like Environment Variables, API Endpoints, or Contributing.
+Built for Sneaker Commerce API
